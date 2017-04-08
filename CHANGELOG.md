@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1
+
+- Add curl support.
+
 ## 0.2.0
 
 **Breaking changes**:

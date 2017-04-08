@@ -1,9 +1,9 @@
 name: http_client
 description: |
     A platform-independent HTTP client API.
-    Implemented platforms: `console` and `browser` (both delegating to the `http` package).
-    Planned platforms: Fetch API, Node.js (with `node_io` wrapper).
-version: 0.2.0
+    Implemented platforms: `console` and `browser` (both delegating to the `http` package),
+    also support `curl`. Planned platforms: Fetch API, Node.js (with `node_io` wrapper).
+version: 0.2.1
 author: Istvan Soos <istvan.soos@gmail.com>
 
 homepage: https://github.com/isoos/http_client
