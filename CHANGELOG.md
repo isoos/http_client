@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.2
+
+- Add executor support to rate-limit the clients.
+
 ## 0.2.1
 
 - Add curl support.

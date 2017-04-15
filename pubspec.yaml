@@ -3,7 +3,7 @@ description: |
     A platform-independent HTTP client API.
     Implemented platforms: `console` and `browser` (both delegating to the `http` package),
     also support `curl`. Planned platforms: Fetch API, Node.js (with `node_io` wrapper).
-version: 0.2.1
+version: 0.2.2
 author: Istvan Soos <istvan.soos@gmail.com>
 
 homepage: https://github.com/isoos/http_client
@@ -12,4 +12,5 @@ environment:
   sdk: '>=1.20.0 <2.0.0'
 
 dependencies:
+  executor: ^0.1.0
   http: ^0.11.3
