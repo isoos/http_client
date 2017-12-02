@@ -1,34 +1,42 @@
 import 'dart:async';
-
-import 'package:http/browser_client.dart' as browser;
-import 'package:http/http.dart' as http;
+import 'dart:html' as html;
+import 'dart:typed_data';
 
 import 'http_client.dart';
 export 'http_client.dart';
 
 /// HTTP Client in browser environment. Delegates to `http` package.
 class BrowserClient implements Client {
-  browser.BrowserClient _delegate = new browser.BrowserClient();
-
   @override
   Future<Response> send(Request request) async {
-    final rq = new http.Request(request.method, request.uri);
-    if (request.headers != null) {
-      rq.headers.addAll(request.headers.toSimpleMap());
-    }
+    ByteBuffer buffer;
+
     if (request.bodyBytes != null) {
-      rq.bodyBytes = request.bodyBytes;
+      buffer = new Uint8List.fromList(request.bodyBytes).buffer;
     } else if (request.bodyStream != null) {
-      rq.bodyBytes =
-          await request.bodyStream.fold([], (l1, l2) => l1..addAll(l2));
+      buffer = new Uint8List.fromList(
+              await request.bodyStream.fold([], (l1, l2) => l1..addAll(l2)))
+          .buffer;
     }
-    final sr = await _delegate.send(rq);
-    return new Response(
-        sr.statusCode, sr.reasonPhrase, new Headers(sr.headers), sr.stream);
+
+    final rs = await html.HttpRequest.request(
+      request.uri.toString(),
+      method: request.method,
+      requestHeaders: request.headers?.toSimpleMap(),
+      sendData: buffer,
+    );
+    final response = rs.response;
+    final headers = new Headers(rs.responseHeaders);
+    if (response is ByteBuffer) {
+      return new Response.withBytes(
+          rs.status, rs.statusText, headers, response.asInt8List().toList());
+    } else if (response is String) {
+      return new Response.withText(rs.status, rs.statusText, headers, response);
+    } else {
+      return new Response(rs.status, rs.statusText, headers, null);
+    }
   }
 
   @override
-  Future close() async {
-    _delegate.close();
-  }
+  Future close() async {}
 }

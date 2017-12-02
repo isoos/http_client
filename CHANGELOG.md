@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.0
+
+- Removed dependency on `http` package.
+
 ## 0.2.2
 
 - Add executor support to rate-limit the clients.

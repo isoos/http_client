@@ -1,8 +1,7 @@
-# HTTP client wrapper
+# Platform-independent HTTP client
 
-Wrapper of the [http](https://pub.dartlang.org/packages/http) package
-to provide a single interface for both browser and console clients,
-until it will support it out of the box.
+A platform-independent HTTP client API supporting browser, console,
+and curl (for SOCKS proxy). Planned platforms: Fetch API, node_io.
 
 ## Usage:
 
