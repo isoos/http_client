@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.1
+
+- Added http proxy option to the console client.
+
 ## 0.3.0
 
 - Removed dependency on `http` package.

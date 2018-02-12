@@ -5,7 +5,7 @@ import 'dart:typed_data';
 import 'http_client.dart';
 export 'http_client.dart';
 
-/// HTTP Client in browser environment. Delegates to `http` package.
+/// HTTP Client in browser environment.
 class BrowserClient implements Client {
   @override
   Future<Response> send(Request request) async {

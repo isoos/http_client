@@ -4,9 +4,25 @@ import 'dart:io' as io;
 import 'http_client.dart';
 export 'http_client.dart';
 
-/// HTTP Client in browser environment. Delegates to `http` package.
+/// HTTP Client in console (server) environment.
 class ConsoleClient implements Client {
-  final io.HttpClient _delegate = new io.HttpClient();
+  final io.HttpClient _delegate;
+
+  ConsoleClient._(this._delegate);
+
+  /// HTTP Client in console (server) environment.
+  ///
+  /// Set [proxy] for static http proxy, or [proxyFn] for dynamic http proxy.
+  /// Return format should be e.g. ""PROXY host:port; PROXY host2:port2; DIRECT"
+  factory ConsoleClient({String proxy, String proxyFn(Uri uri)}) {
+    final delegate = new io.HttpClient();
+    if (proxy != null) {
+      delegate.findProxy = (uri) => proxy;
+    } else if (proxyFn != null) {
+      delegate.findProxy = proxyFn;
+    }
+    return new ConsoleClient._(delegate);
+  }
 
   @override
   Future<Response> send(Request request) async {
