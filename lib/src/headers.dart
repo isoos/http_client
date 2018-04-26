@@ -35,6 +35,11 @@ class Headers {
     _values.remove(header);
   }
 
+  /// Whether the [key] is specified.
+  bool containsKey(String key) {
+    return _values.containsKey(key);
+  }
+
   /// Converts values to a simple String -> String Map.
   /// When multiple header values are present, only the last value is is used.
   Map<String, String> toSimpleMap() {

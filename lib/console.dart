@@ -2,40 +2,61 @@ import 'dart:async';
 import 'dart:io' as io;
 
 import 'http_client.dart';
+import 'src/headers.dart' show wrapHeaders;
+
 export 'http_client.dart';
 
 /// HTTP Client in console (server) environment.
 class ConsoleClient implements Client {
   final io.HttpClient _delegate;
+  final Headers _headers;
 
-  ConsoleClient._(this._delegate);
+  ConsoleClient._(this._delegate, this._headers);
 
   /// HTTP Client in console (server) environment.
   ///
   /// Set [proxy] for static http proxy, or [proxyFn] for dynamic http proxy.
   /// Return format should be e.g. ""PROXY host:port; PROXY host2:port2; DIRECT"
-  factory ConsoleClient({String proxy, String proxyFn(Uri uri)}) {
+  factory ConsoleClient({
+    String proxy,
+    String proxyFn(Uri uri),
+    /* Headers | Map */
+    dynamic headers,
+  }) {
     final delegate = new io.HttpClient();
     if (proxy != null) {
       delegate.findProxy = (uri) => proxy;
     } else if (proxyFn != null) {
       delegate.findProxy = proxyFn;
     }
-    return new ConsoleClient._(delegate);
+    return new ConsoleClient._(delegate, wrapHeaders(headers));
   }
 
   @override
   Future<Response> send(Request request) async {
     final rq = await _delegate.openUrl(request.method, request.uri);
+
+    void applyHeader(Headers headers, String key) {
+      final List<String> values = request.headers[key];
+      if (values == null || values.isEmpty) return;
+      if (values.length == 1) {
+        rq.headers.set(key, values.single);
+      } else {
+        rq.headers.set(key, values);
+      }
+    }
+
     if (request.headers != null) {
       for (String key in request.headers.keys) {
-        final List<String> values = request.headers[key];
-        if (values == null || values.isEmpty) continue;
-        if (values.length == 1) {
-          rq.headers.set(key, values.single);
-        } else {
-          rq.headers.set(key, values);
+        applyHeader(request.headers, key);
+      }
+    }
+    if (_headers != null) {
+      for (String key in request.headers.keys) {
+        if (request.headers != null && request.headers.containsKey(key)) {
+          continue;
         }
+        applyHeader(_headers, key);
       }
     }
     if (request.bodyBytes != null) {

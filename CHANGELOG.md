@@ -4,6 +4,7 @@
 
 - Fix deprecated API use.
 - Fix header wrapping in requests.
+- Default header values in `ConsoleClient`.
 
 ## 0.3.1
 
