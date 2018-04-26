@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'src/headers.dart';
+export 'src/headers.dart' show Headers;
+
 /// HTTP Client interface.
 abstract class Client {
   /// Sends the [request] and returns the [Response]
@@ -52,10 +55,8 @@ class Request {
     } else if (body != null) {
       throw new Exception('Unable to parse body: $body');
     }
-    if (headers is Map) {
-      headers = new Headers(headers);
-    }
-    return new Request._(method, parsedUri, headers, bodyBytes, bodyStream);
+    return new Request._(
+        method, parsedUri, wrapHeaders(headers), bodyBytes, bodyStream);
   }
 
   Request._(
@@ -120,51 +121,5 @@ class Response {
       return new Future.value(encoding.decode(_bodyBytes));
     }
     return encoding.decodeStream(body);
-  }
-}
-
-/// HTTP Headers
-/// [Headers] object is mutable and new values can be added up until
-/// [Client.send] is called.
-class Headers {
-  final Map<String, List<String>> _values = {};
-
-  /// Creates a new HTTP Header object, optinally using [values] as initializer.
-  Headers([Map<String, dynamic> values]) {
-    values?.forEach(add);
-  }
-
-  /// Returns the header names set.
-  Iterable<String> get keys => _values.keys;
-
-  /// Returns the values set for [header].
-  List<String> operator [](String header) => _values[header];
-
-  /// Add [header] with [value].
-  ///
-  /// [value] can be a List<String> or a String.
-  void add(String header, dynamic value) {
-    if (value == null) return;
-    final List<String> list = _values.putIfAbsent(header, () => []);
-    if (value is List<String>) {
-      list.addAll(value);
-    } else {
-      list.add(value.toString());
-    }
-  }
-
-  /// Remove [header].
-  void remove(String header) {
-    _values.remove(header);
-  }
-
-  /// Converts values to a simple String -> String Map.
-  /// When multiple header values are present, only the last value is is used.
-  Map<String, String> toSimpleMap() {
-    final Map<String, String> result = {};
-    _values.forEach((String header, List<String> values) {
-      result[header] = values.last;
-    });
-    return result;
   }
 }

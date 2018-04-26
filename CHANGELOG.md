@@ -3,6 +3,7 @@
 ## 0.4.0
 
 - Fix deprecated API use.
+- Fix header wrapping in requests.
 
 ## 0.3.1
 
