@@ -37,7 +37,7 @@ class Request {
     dynamic uri, {
     dynamic headers,
     dynamic body,
-    Encoding encoding: UTF8,
+    Encoding encoding: utf8,
   }) {
     assert(uri is String || uri is Uri);
     final Uri parsedUri = uri is Uri ? uri : Uri.parse(uri.toString());
@@ -104,7 +104,7 @@ class Response {
       return _body;
     }
     if (_bodyText != null) {
-      _body ??= new Stream.fromIterable([UTF8.encode(_bodyText)]);
+      _body ??= new Stream.fromIterable([utf8.encode(_bodyText)]);
     }
     return null;
   }
@@ -112,8 +112,8 @@ class Response {
   /// Reads the [body] as String with [encoding]
   Future<String> readAsString({Encoding encoding}) {
     // TODO: detect encoding from headers
-    encoding ??= UTF8;
-    if (encoding == UTF8 && _bodyText != null) {
+    encoding ??= utf8;
+    if (encoding == utf8 && _bodyText != null) {
       return new Future.value(_bodyText);
     }
     if (_bodyBytes != null) {

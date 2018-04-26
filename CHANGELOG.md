@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.0
+
+- Fix deprecated API use.
+
 ## 0.3.1
 
 - Added http proxy option to the console client.
