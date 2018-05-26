@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.1-dev
+
+- Enabled Dart2 Preview for analysis.
+
 ## 0.4.0
 
 - Fix deprecated API use.

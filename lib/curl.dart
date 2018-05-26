@@ -36,8 +36,9 @@ class CurlClient implements Client {
     // TODO: handle status code and reason phrase
     final ProcessResult pr =
         await Process.run(executable ?? 'curl', args, stdoutEncoding: null);
+    final List<int> list = pr.stdout;
     return new Response(pr.exitCode == 0 ? 200 : -1, null, new Headers(),
-        new Stream.fromIterable(<List<int>>[pr.stdout]));
+        new Stream.fromIterable(<List<int>>[list]));
   }
 
   @override
