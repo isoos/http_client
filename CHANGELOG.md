@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.4.1-dev
+## 0.4.1
 
 - Enabled Dart2 Preview for analysis.
 
