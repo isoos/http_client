@@ -3,6 +3,7 @@
 ## 0.4.3
 
 - Record redirect info (when available).
+- `Response.requestAddress` to have the address where the request was opened at.
 
 ## 0.4.2
 

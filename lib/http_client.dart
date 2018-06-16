@@ -109,7 +109,10 @@ class Response {
   /// The redirect steps that happened.
   final List<RedirectInfo> redirects;
 
-  /// The remote address that the request was opened at.
+  /// The remote address that the response was opened at.
+  final String requestAddress;
+
+  /// The remote address that the response was returned from.
   final String remoteAddress;
 
   /// Creates a HTTP Response object with stream response type.
@@ -119,6 +122,7 @@ class Response {
     this.headers,
     this._body, {
     this.redirects,
+    this.requestAddress,
     this.remoteAddress,
   })  : _bodyText = null,
         _bodyBytes = null;
@@ -130,6 +134,7 @@ class Response {
     this.headers,
     String text, {
     this.redirects,
+    this.requestAddress,
     this.remoteAddress,
   })  : _bodyText = text,
         _bodyBytes = null;
@@ -141,6 +146,7 @@ class Response {
     this.headers,
     List<int> bytes, {
     this.redirects,
+    this.requestAddress,
     this.remoteAddress,
   })  : _bodyText = null,
         _bodyBytes = bytes;

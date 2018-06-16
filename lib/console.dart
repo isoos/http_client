@@ -119,6 +119,7 @@ class ConsoleClient implements Client {
       redirects: rs?.redirects
           ?.map((ri) => new RedirectInfo(ri.statusCode, ri.method, ri.location))
           ?.toList(),
+      requestAddress: rq?.connectionInfo?.remoteAddress?.address,
       remoteAddress: rs?.connectionInfo?.remoteAddress?.address,
     );
   }
