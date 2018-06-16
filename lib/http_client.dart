@@ -106,21 +106,37 @@ class Response {
   final List<int> _bodyBytes;
   Stream<List<int>> _body;
 
+  /// The remote address that the request was opened at.
+  final String remoteAddress;
+
   /// Creates a HTTP Response object with stream response type.
-  Response(this.statusCode, this.reasonPhrase, this.headers, this._body)
-      : _bodyText = null,
+  Response(
+    this.statusCode,
+    this.reasonPhrase,
+    this.headers,
+    this._body, {
+    this.remoteAddress,
+  })  : _bodyText = null,
         _bodyBytes = null;
 
   /// Creates a HTTP Response object with text response type.
   Response.withText(
-      this.statusCode, this.reasonPhrase, this.headers, String text)
-      : _bodyText = text,
+    this.statusCode,
+    this.reasonPhrase,
+    this.headers,
+    String text, {
+    this.remoteAddress,
+  })  : _bodyText = text,
         _bodyBytes = null;
 
   /// Creates a HTTP Response object with bytes response type.
   Response.withBytes(
-      this.statusCode, this.reasonPhrase, this.headers, List<int> bytes)
-      : _bodyText = null,
+    this.statusCode,
+    this.reasonPhrase,
+    this.headers,
+    List<int> bytes, {
+    this.remoteAddress,
+  })  : _bodyText = null,
         _bodyBytes = bytes;
 
   /// HTTP body
