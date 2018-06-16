@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io' as io;
 
 import 'http_client.dart';
@@ -117,6 +116,9 @@ class ConsoleClient implements Client {
       rs.reasonPhrase,
       headers,
       rs,
+      redirects: rs?.redirects
+          ?.map((ri) => new RedirectInfo(ri.statusCode, ri.method, ri.location))
+          ?.toList(),
       remoteAddress: rs?.connectionInfo?.remoteAddress?.address,
     );
   }

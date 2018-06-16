@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.3
+
+- Record redirect info (when available).
+
 ## 0.4.2
 
 - Better `Headers` handling.

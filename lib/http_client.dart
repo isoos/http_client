@@ -106,6 +106,9 @@ class Response {
   final List<int> _bodyBytes;
   Stream<List<int>> _body;
 
+  /// The redirect steps that happened.
+  final List<RedirectInfo> redirects;
+
   /// The remote address that the request was opened at.
   final String remoteAddress;
 
@@ -115,6 +118,7 @@ class Response {
     this.reasonPhrase,
     this.headers,
     this._body, {
+    this.redirects,
     this.remoteAddress,
   })  : _bodyText = null,
         _bodyBytes = null;
@@ -125,6 +129,7 @@ class Response {
     this.reasonPhrase,
     this.headers,
     String text, {
+    this.redirects,
     this.remoteAddress,
   })  : _bodyText = text,
         _bodyBytes = null;
@@ -135,6 +140,7 @@ class Response {
     this.reasonPhrase,
     this.headers,
     List<int> bytes, {
+    this.redirects,
     this.remoteAddress,
   })  : _bodyText = null,
         _bodyBytes = bytes;
@@ -166,4 +172,19 @@ class Response {
     }
     return encoding.decodeStream(body);
   }
+}
+
+/// Information about the redirect step.
+class RedirectInfo {
+  /// The status code of the redirect.
+  final int statusCode;
+
+  /// The method of the redirect.
+  final String method;
+
+  /// The location of the redirect.
+  final Uri location;
+
+  ///
+  RedirectInfo(this.statusCode, this.method, this.location);
 }
