@@ -23,8 +23,8 @@ class Headers {
   void add(String header, dynamic value) {
     if (value == null) return;
     final List<String> list = _values.putIfAbsent(header, () => []);
-    if (value is List<String>) {
-      list.addAll(value);
+    if (value is List) {
+      list.addAll(value.map((o) => o.toString()));
     } else {
       list.add(value.toString());
     }
@@ -48,6 +48,11 @@ class Headers {
       result[header] = values.last;
     });
     return result;
+  }
+
+  /// Gets a deep copy of the values.
+  Map<String, List<String>> toMap() {
+    return _values.map((k, v) => new MapEntry(k, new List<String>.from(v)));
   }
 }
 

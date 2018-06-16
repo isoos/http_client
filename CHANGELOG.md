@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.2
+
+- Better `Headers` handling.
+
 ## 0.4.1
 
 - Enabled Dart2 Preview for analysis.
