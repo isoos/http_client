@@ -4,6 +4,7 @@
 
 - Better `Headers` handling.
 - Request properties: `persistentConnection`, `followRedirects`, `maxRedirects`.
+- ConsoleClient properties: `idleTimeout`, `maxConnectionsPerHost`, `autoUncompress`, `userAgent`.
 
 ## 0.4.1
 

@@ -20,14 +20,40 @@ class ConsoleClient implements Client {
   factory ConsoleClient({
     String proxy,
     String proxyFn(Uri uri),
+
     /* Headers | Map */
     dynamic headers,
+
+    /// The idle timeout of non-active persistent (keep-alive) connections.
+    Duration idleTimeout,
+
+    /// the maximum number of live connections, to a single host.
+    int maxConnectionsPerHost,
+
+    /// Whether the body of a response will be automatically uncompressed.
+    bool autoUncompress,
+
+    /// The default value of the `User-Agent` header for all requests.
+    /// Set to empty string to disable setting the User-Agent header automatically.
+    String userAgent,
   }) {
     final delegate = new io.HttpClient();
     if (proxy != null) {
       delegate.findProxy = (uri) => proxy;
     } else if (proxyFn != null) {
       delegate.findProxy = proxyFn;
+    }
+    if (idleTimeout != null) {
+      delegate.idleTimeout = idleTimeout;
+    }
+    if (maxConnectionsPerHost != null) {
+      delegate.maxConnectionsPerHost = maxConnectionsPerHost;
+    }
+    if (autoUncompress != null) {
+      delegate.autoUncompress = autoUncompress;
+    }
+    if (userAgent != null) {
+      delegate.userAgent = userAgent.isEmpty ? null : userAgent;
     }
     return new ConsoleClient._(delegate, wrapHeaders(headers));
   }
