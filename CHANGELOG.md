@@ -4,6 +4,7 @@
 
 - Record redirect info (when available).
 - `Response.requestAddress` to have the address where the request was opened at.
+- **BREAKING**: `Response.remoteAddress` renamed to `responseAddress`.
 
 ## 0.4.2
 

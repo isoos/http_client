@@ -113,7 +113,7 @@ class Response {
   final String requestAddress;
 
   /// The remote address that the response was returned from.
-  final String remoteAddress;
+  final String responseAddress;
 
   /// Creates a HTTP Response object with stream response type.
   Response(
@@ -123,7 +123,7 @@ class Response {
     this._body, {
     this.redirects,
     this.requestAddress,
-    this.remoteAddress,
+    this.responseAddress,
   })  : _bodyText = null,
         _bodyBytes = null;
 
@@ -135,7 +135,7 @@ class Response {
     String text, {
     this.redirects,
     this.requestAddress,
-    this.remoteAddress,
+    this.responseAddress,
   })  : _bodyText = text,
         _bodyBytes = null;
 
@@ -147,7 +147,7 @@ class Response {
     List<int> bytes, {
     this.redirects,
     this.requestAddress,
-    this.remoteAddress,
+    this.responseAddress,
   })  : _bodyText = null,
         _bodyBytes = bytes;
 

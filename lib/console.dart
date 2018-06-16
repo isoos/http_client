@@ -120,7 +120,7 @@ class ConsoleClient implements Client {
           ?.map((ri) => new RedirectInfo(ri.statusCode, ri.method, ri.location))
           ?.toList(),
       requestAddress: rq?.connectionInfo?.remoteAddress?.address,
-      remoteAddress: rs?.connectionInfo?.remoteAddress?.address,
+      responseAddress: rs?.connectionInfo?.remoteAddress?.address,
     );
   }
 
