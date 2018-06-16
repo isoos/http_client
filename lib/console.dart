@@ -59,6 +59,18 @@ class ConsoleClient implements Client {
         applyHeader(_headers, key);
       }
     }
+
+    if (request.persistentConnection != null) {
+      rq.persistentConnection = request.persistentConnection;
+    }
+    if (request.followRedirects != null) {
+      rq.followRedirects = request.followRedirects;
+    }
+    if (request.maxRedirects != null) {
+      rq.maxRedirects = request.maxRedirects;
+    }
+
+    // sending body
     if (request.bodyBytes != null) {
       rq.add(request.bodyBytes);
       await rq.close();

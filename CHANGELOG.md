@@ -3,6 +3,7 @@
 ## 0.4.2
 
 - Better `Headers` handling.
+- Request properties: `persistentConnection`, `followRedirects`, `maxRedirects`.
 
 ## 0.4.1
 

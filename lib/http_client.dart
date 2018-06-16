@@ -34,6 +34,15 @@ class Request {
   /// null.
   final List<int> bodyBytes;
 
+  /// The requested persistent connection state.
+  final bool persistentConnection;
+
+  /// Whether this request should automatically follow redirects.
+  final bool followRedirects;
+
+  /// The maximum number of redirects to follow when [followRedirects] is `true`.
+  final int maxRedirects;
+
   /// Creates a HTTP Request object.
   factory Request(
     String method,
@@ -41,6 +50,9 @@ class Request {
     dynamic headers,
     dynamic body,
     Encoding encoding: utf8,
+    bool persistentConnection,
+    bool followRedirects,
+    int maxRedirects,
   }) {
     assert(uri is String || uri is Uri);
     final Uri parsedUri = uri is Uri ? uri : Uri.parse(uri.toString());
@@ -56,11 +68,27 @@ class Request {
       throw new Exception('Unable to parse body: $body');
     }
     return new Request._(
-        method, parsedUri, wrapHeaders(headers), bodyBytes, bodyStream);
+      method,
+      parsedUri,
+      wrapHeaders(headers),
+      bodyBytes,
+      bodyStream,
+      persistentConnection,
+      followRedirects,
+      maxRedirects,
+    );
   }
 
   Request._(
-      this.method, this.uri, this.headers, this.bodyBytes, this.bodyStream);
+    this.method,
+    this.uri,
+    this.headers,
+    this.bodyBytes,
+    this.bodyStream,
+    this.persistentConnection,
+    this.followRedirects,
+    this.maxRedirects,
+  );
 }
 
 /// A HTTP Response object.

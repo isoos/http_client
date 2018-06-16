@@ -25,7 +25,14 @@ class CurlClient implements Client {
     if (request.bodyBytes != null || request.bodyStream != null) {
       throw new Exception('Sending body is not yet supported.');
     }
-    final List<String> args = ['-L'];
+    final List<String> args = [];
+    if (request.followRedirects == null || request.followRedirects) {
+      args.add('-L');
+    }
+    if (request.maxRedirects != null) {
+      args.add('--max-redirs');
+      args.add(request.maxRedirects.toString());
+    }
     if (userAgent != null) args.addAll(['-A', userAgent]);
     if (socksHostPort != null) args.addAll(['--socks5', socksHostPort]);
     final String method = request.method ?? 'GET';
