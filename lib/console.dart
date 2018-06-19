@@ -63,7 +63,7 @@ class ConsoleClient implements Client {
     final rq = await _delegate.openUrl(request.method, request.uri);
 
     void applyHeader(Headers headers, String key) {
-      final List<String> values = request.headers[key];
+      final List<String> values = headers[key];
       if (values == null || values.isEmpty) return;
       if (values.length == 1) {
         rq.headers.set(key, values.single);
@@ -78,7 +78,7 @@ class ConsoleClient implements Client {
       }
     }
     if (_headers != null) {
-      for (String key in request.headers.keys) {
+      for (String key in _headers.keys) {
         if (request.headers != null && request.headers.containsKey(key)) {
           continue;
         }

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.4+1
+
+- Fix header override bug.
+
 ## 0.4.3
 
 - Record redirect info (when available).
