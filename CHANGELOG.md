@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.0
+
+- Dart 2
+
 ## 0.4.4+1
 
 - Fix header override bug.
