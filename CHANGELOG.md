@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.1
+
+- Code update: Dart 2.1(-dev) lints.
+
 ## 0.5.0
 
 - Dart 2
