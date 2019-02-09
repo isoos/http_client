@@ -125,7 +125,7 @@ class ConsoleClient implements Client {
   }
 
   @override
-  Future close() async {
-    _delegate.close(force: true);
+  Future close({bool force = false}) async {
+    _delegate.close(force: force);
   }
 }

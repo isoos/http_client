@@ -10,7 +10,12 @@ abstract class Client {
   Future<Response> send(Request request);
 
   /// Closes any HTTP Client resources.
-  Future close();
+  ///
+  /// If [force] is `false` (the default) the [Client] will be kept alive
+  /// until all active connections are done. If [force] is `true` any active
+  /// connections will be closed to immediately release all resources
+  /// (subject to platform support).
+  Future close({bool force = false});
 }
 
 /// HTTP Request object

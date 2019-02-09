@@ -18,8 +18,8 @@ class HttpExecutor extends Client {
       _executor.scheduleTask(() => _client.send(request));
 
   @override
-  Future close() async {
+  Future close({bool force = false}) async {
     await _executor.close();
-    await _client.close();
+    await _client.close(force: force);
   }
 }

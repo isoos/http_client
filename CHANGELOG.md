@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.0
+
+- Support `close({bool force})` on the API (and on console).
+
 ## 0.5.1
 
 - Code update: Dart 2.1(-dev) lints.

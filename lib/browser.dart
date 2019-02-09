@@ -38,5 +38,7 @@ class BrowserClient implements Client {
   }
 
   @override
-  Future close() async {}
+  Future close({bool force = false}) async {
+    // TODO: throw exception on send() when the [BrowserClient] is closed.
+  }
 }
