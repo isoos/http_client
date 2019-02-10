@@ -5,6 +5,7 @@ import 'src/headers.dart';
 
 export 'src/headers.dart' show Headers;
 export 'src/tracking_client.dart';
+export 'src/updating_client.dart';
 
 /// HTTP Client interface.
 abstract class Client {
