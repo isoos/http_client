@@ -3,6 +3,7 @@
 ## 0.6.0
 
 - Support `close({bool force})` on the API (and on console).
+- Support `Response.done` to indicate when the underlying input stream has been read and completed.
 
 ## 0.5.1
 

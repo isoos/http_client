@@ -6,6 +6,8 @@ export 'src/headers.dart' show Headers;
 
 /// HTTP Client interface.
 abstract class Client {
+  // int get ongoingCount;
+
   /// Sends the [request] and returns the [Response]
   Future<Response> send(Request request);
 
@@ -110,6 +112,7 @@ class Response {
   final String _bodyText;
   final List<int> _bodyBytes;
   Stream<List<int>> _body;
+  final Completer _bodyDone;
 
   /// The redirect steps that happened.
   final List<RedirectInfo> redirects;
@@ -125,12 +128,20 @@ class Response {
     this.statusCode,
     this.reasonPhrase,
     this.headers,
-    this._body, {
+    Stream<List<int>> body, {
     this.redirects,
     this.requestAddress,
     this.responseAddress,
   })  : _bodyText = null,
-        _bodyBytes = null;
+        _bodyBytes = null,
+        _bodyDone = Completer() {
+    _body = body.transform(StreamTransformer<List<int>, List<int>>.fromHandlers(
+      handleDone: (sink) {
+        sink.close();
+        _bodyDone.complete();
+      },
+    ));
+  }
 
   /// Creates a HTTP Response object with text response type.
   Response.withText(
@@ -142,7 +153,8 @@ class Response {
     this.requestAddress,
     this.responseAddress,
   })  : _bodyText = text,
-        _bodyBytes = null;
+        _bodyBytes = null,
+        _bodyDone = null;
 
   /// Creates a HTTP Response object with bytes response type.
   Response.withBytes(
@@ -154,7 +166,8 @@ class Response {
     this.requestAddress,
     this.responseAddress,
   })  : _bodyText = null,
-        _bodyBytes = bytes;
+        _bodyBytes = bytes,
+        _bodyDone = null;
 
   /// HTTP body
   Stream<List<int>> get body {
@@ -182,6 +195,11 @@ class Response {
       return new Future.value(encoding.decode(_bodyBytes));
     }
     return encoding.decodeStream(body);
+  }
+
+  /// Completes when the underlying input stream has been read and completed.
+  Future get done async {
+    await _bodyDone?.future;
   }
 }
 
