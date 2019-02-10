@@ -2,7 +2,9 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'src/headers.dart';
+
 export 'src/headers.dart' show Headers;
+export 'src/tracking_client.dart';
 
 /// HTTP Client interface.
 abstract class Client {

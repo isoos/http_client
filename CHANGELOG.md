@@ -4,6 +4,7 @@
 
 - Support `close({bool force})` on the API (and on console).
 - Support `Response.done` to indicate when the underlying input stream has been read and completed.
+- `TrackingClient` to keep track of ongoing and completed request count (with content read support). 
 
 ## 0.5.1
 
