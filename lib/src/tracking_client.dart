@@ -5,6 +5,8 @@ import '../http_client.dart';
 /// Tracks the entire lifecycle of a request, keeps track the number of ongoing
 /// and completed requests.
 class TrackingClient implements Client {
+  /// The backing configuration description of the delegate client.
+  final dynamic delegateConfig;
   final Client _delegate;
   final _ongoingRequests = <Future>[];
   final _ongoingContents = <Future>[];
@@ -13,7 +15,7 @@ class TrackingClient implements Client {
   bool _isClosed = false;
 
   /// Creates a tracking client with a Client delegate.
-  TrackingClient(this._delegate);
+  TrackingClient(this._delegate, {this.delegateConfig});
 
   /// The number of ongoing requests and content reads.
   int get ongoingCount => _ongoingCount;
