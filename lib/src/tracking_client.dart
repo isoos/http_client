@@ -55,10 +55,8 @@ class TrackingClient implements Client {
 
   /// Completes when the currently active requests and content reads complete.
   Future join() async {
-    await Future.wait(
-        _ongoingRequests.map((f) => f.whenComplete(() => null)));
-    await Future.wait(
-        _ongoingContents.map((f) => f.whenComplete(() => null)));
+    await Future.wait(_ongoingRequests.map((f) => f.whenComplete(() => null)));
+    await Future.wait(_ongoingContents.map((f) => f.whenComplete(() => null)));
   }
 
   @override

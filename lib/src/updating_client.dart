@@ -33,12 +33,12 @@ class UpdatingClient implements Client {
     return withClient((client) => client.send(request));
   }
 
-  /// Runs a function with a [Client] as parameter and handles invalidation on
-  /// exceptions.
+  /// Runs a function with a [TrackingClient] as parameter and handles
+  /// invalidation on exceptions.
   ///
   /// The client remains the same until the function completes.
   Future<R> withClient<R>(
-    Future<R> fn(Client client), {
+    Future<R> fn(TrackingClient client), {
     bool invalidateOnError = false,
     bool forceCloseOnError = false,
   }) async {
@@ -98,8 +98,10 @@ class UpdatingClient implements Client {
     _nextCompleter = Completer();
     try {
       final client = await _createClientFn();
+      final trackingClient =
+          client is TrackingClient ? client : TrackingClient(client);
       expireCurrent();
-      _current = _Client(TrackingClient(client));
+      _current = _Client(trackingClient);
       _current._useCount++;
       _nextCompleter.complete();
       return _current;
