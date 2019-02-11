@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.1
+
+- Explicit expiration in `UpdatingClient`.
+
 ## 0.6.0
 
 - Support `close({bool force})` on the API (and on console).

@@ -47,6 +47,7 @@ class UpdatingClient implements Client {
   @override
   Future close({bool force = false}) async {
     _isClosing = true;
+    expireCurrent();
     final futures =
         _pastClients.map((c) => c._client.close(force: force)).toList();
     futures.add(_current?._client?.close(force: force));
@@ -54,18 +55,17 @@ class UpdatingClient implements Client {
   }
 
   Future<_Client> _allocate() async {
-    if (_isClosing) {
-      throw StateError('HTTP Client closing.');
-    }
     // cleanup past clients
     while (_pastClients.isNotEmpty && _pastClients.last._useCount == 0) {
       final client = _pastClients.removeLast();
       await client._client.close();
     }
+    if (_isClosing) {
+      throw StateError('HTTP Client closing.');
+    }
     // expire if needed
     if (_current != null && _current.isExpired(_requestLimit, _timeLimit)) {
-      _pastClients.add(_current);
-      _current = null;
+      expireCurrent();
     }
     // wait for ongoing creation
     if (_nextCompleter != null) {
@@ -80,15 +80,22 @@ class UpdatingClient implements Client {
     _nextCompleter = Completer();
     try {
       final client = await _createClientFn();
-      if (_current != null) {
-        _pastClients.add(_current);
-      }
+      expireCurrent();
       _current = _Client(TrackingClient(client));
       _current._useCount++;
       _nextCompleter.complete();
       return _current;
     } finally {
       _nextCompleter = null;
+    }
+  }
+
+  /// Marks the currently active client as expired, next calls should trigger a
+  /// new client creation.
+  void expireCurrent() {
+    if (_current != null) {
+      _pastClients.add(_current);
+      _current = null;
     }
   }
 
