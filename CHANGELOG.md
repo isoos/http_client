@@ -9,7 +9,7 @@
 
 Other updates
 
-- Explicit expiration in `UpdatingClient`.
+- Explicit expiration, and optional on-exception expiration in `UpdatingClient`.
 - Support form-encoded values as request body.
 - Support `File` with `Request.body` on `ConsoleClient`.
 - Support native request types with `Request.body` and `Response.body` on `BrowserClient`.

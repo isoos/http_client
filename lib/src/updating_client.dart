@@ -33,14 +33,31 @@ class UpdatingClient implements Client {
     return withClient((client) => client.send(request));
   }
 
-  /// Runs a function with a [Client] as parameter (which that remains the same
-  /// until the function completes.
-  Future<R> withClient<R>(Future<R> fn(Client client)) async {
+  /// Runs a function with a [Client] as parameter and handles invalidation on
+  /// exceptions.
+  ///
+  /// The client remains the same until the function completes.
+  Future<R> withClient<R>(
+    Future<R> fn(Client client), {
+    bool invalidateOnError = false,
+    bool forceCloseOnError = false,
+  }) async {
+    await _cleanupPastClients(false);
     final client = await _allocate();
     try {
       return await fn(client._client);
+    } catch (_) {
+      if (invalidateOnError || forceCloseOnError) {
+        client._forceClose = forceCloseOnError;
+        if (_current == client) {
+          _current = null;
+          _pastClients.add(client);
+        }
+      }
+      rethrow;
     } finally {
       await _release(client);
+      await _cleanupPastClients(false);
     }
   }
 
@@ -48,18 +65,19 @@ class UpdatingClient implements Client {
   Future close({bool force = false}) async {
     _isClosing = true;
     expireCurrent();
-    final futures =
-        _pastClients.map((c) => c._client.close(force: force)).toList();
-    futures.add(_current?._client?.close(force: force));
+    await _cleanupPastClients(force);
+    await _current?._client?.close(force: force);
+  }
+
+  Future _cleanupPastClients(bool force) async {
+    final futures = _pastClients
+        .map((c) => c._client.close(force: force || c._forceClose))
+        .map((f) => f.whenComplete(() => null))
+        .toList();
     await Future.wait(futures);
   }
 
   Future<_Client> _allocate() async {
-    // cleanup past clients
-    while (_pastClients.isNotEmpty && _pastClients.last._useCount == 0) {
-      final client = _pastClients.removeLast();
-      await client._client.close();
-    }
     if (_isClosing) {
       throw StateError('HTTP Client closing.');
     }
@@ -92,8 +110,9 @@ class UpdatingClient implements Client {
 
   /// Marks the currently active client as expired, next calls should trigger a
   /// new client creation.
-  void expireCurrent() {
+  void expireCurrent({bool force = false}) {
     if (_current != null) {
+      _current._forceClose = force;
       _pastClients.add(_current);
       _current = null;
     }
@@ -108,6 +127,7 @@ class _Client {
   final TrackingClient _client;
   final _created = DateTime.now();
   int _useCount = 0;
+  bool _forceClose = false;
 
   _Client(this._client);
 
