@@ -31,12 +31,10 @@ class BrowserClient implements Client {
     final response = rs.response;
     final headers = new Headers(rs.responseHeaders);
     if (response is ByteBuffer) {
-      return new Response.withBytes(
-          rs.status, rs.statusText, headers, response.asInt8List().toList());
-    } else if (response is String) {
-      return new Response.withText(rs.status, rs.statusText, headers, response);
+      return new Response(
+          rs.status, rs.statusText, headers, response.asUint8List());
     } else {
-      return new Response(rs.status, rs.statusText, headers, null);
+      return new Response(rs.status, rs.statusText, headers, response);
     }
   }
 

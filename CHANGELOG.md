@@ -5,13 +5,14 @@
 **BREAKING CHANGES**
 - `Request.body` is used instead of `bodyStream` and `bodyBytes`.
 - `Stream<List<int>>` inputs are no longer supported, use restartable `FutureOr<Stream<List<int>>> StreamFn()` instead.
+- Single `Response` constructor, `body` become an untyped holder (use `bodyAsStream` if migrating uses). 
 
 Other updates
 
 - Explicit expiration in `UpdatingClient`.
 - Support form-encoded values as request body.
 - Support `File` with `Request.body` on `ConsoleClient`.
-- Support native request types with `Request.body` on `BrowserClient`.
+- Support native request types with `Request.body` and `Response.body` on `BrowserClient`.
 
 ## 0.6.0
 

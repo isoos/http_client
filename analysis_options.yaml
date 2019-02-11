@@ -1,4 +1,5 @@
 #   https://www.dartlang.org/guides/language/analysis-options
+include: package:pedantic/analysis_options.yaml
 
 # http://dart-lang.github.io/linter/lints/options/options.html
 linter:

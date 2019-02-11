@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:buffer/buffer.dart' as buffer;
+
 import 'src/headers.dart';
 
 export 'src/headers.dart' show Headers;
@@ -55,7 +57,7 @@ class Request {
     dynamic uri, {
     dynamic headers,
     dynamic body,
-    Encoding encoding: utf8,
+    Encoding encoding = utf8,
     bool persistentConnection,
     bool followRedirects,
     int maxRedirects,
@@ -120,10 +122,11 @@ class Response {
   /// HTTP headers
   final Headers headers;
 
-  final String _bodyText;
-  final List<int> _bodyBytes;
-  Stream<List<int>> _body;
-  final Completer _bodyDone;
+  dynamic _body;
+  String _bodyText;
+  List<int> _bodyBytes;
+  Stream<List<int>> _bodyStream;
+  Completer _doneCompleter;
 
   /// The redirect steps that happened.
   final List<RedirectInfo> redirects;
@@ -134,68 +137,58 @@ class Response {
   /// The remote address that the response was returned from.
   final String responseAddress;
 
-  /// Creates a HTTP Response object with stream response type.
+  /// Creates a HTTP Response object.
   Response(
     this.statusCode,
     this.reasonPhrase,
     this.headers,
-    Stream<List<int>> body, {
+    dynamic body, {
     this.redirects,
     this.requestAddress,
     this.responseAddress,
-  })  : _bodyText = null,
-        _bodyBytes = null,
-        _bodyDone = Completer() {
-    _body = body.transform(StreamTransformer<List<int>, List<int>>.fromHandlers(
-      handleDone: (sink) {
-        sink.close();
-        _bodyDone.complete();
-      },
-    ));
+  }) {
+    if (body is String) {
+      _bodyText = body;
+    } else if (body is List<int>) {
+      _bodyBytes = body;
+    } else if (body is Stream<List<int>>) {
+      _doneCompleter = Completer();
+      _bodyStream =
+          body.transform(StreamTransformer<List<int>, List<int>>.fromHandlers(
+        handleDone: (sink) {
+          sink.close();
+          _doneCompleter.complete();
+        },
+      ));
+    } else {
+      _body = body;
+    }
   }
 
-  /// Creates a HTTP Response object with text response type.
-  Response.withText(
-    this.statusCode,
-    this.reasonPhrase,
-    this.headers,
-    String text, {
-    this.redirects,
-    this.requestAddress,
-    this.responseAddress,
-  })  : _bodyText = text,
-        _bodyBytes = null,
-        _bodyDone = null;
+  /// HTTP body content.
+  dynamic get body {
+    return _bodyText ?? _bodyBytes ?? _bodyStream ?? _body;
+  }
 
-  /// Creates a HTTP Response object with bytes response type.
-  Response.withBytes(
-    this.statusCode,
-    this.reasonPhrase,
-    this.headers,
-    List<int> bytes, {
-    this.redirects,
-    this.requestAddress,
-    this.responseAddress,
-  })  : _bodyText = null,
-        _bodyBytes = bytes,
-        _bodyDone = null;
-
-  /// HTTP body
-  Stream<List<int>> get body {
-    if (_body != null) {
-      return _body;
+  /// HTTP body content as Stream.
+  Stream<List<int>> get bodyAsStream {
+    if (_bodyStream != null) {
+      return _bodyStream;
     }
     if (_bodyBytes != null) {
-      _body ??= new Stream.fromIterable([_bodyBytes]);
-      return _body;
+      _bodyStream ??= new Stream.fromIterable([_bodyBytes]);
+      return _bodyStream;
     }
     if (_bodyText != null) {
-      _body ??= new Stream.fromIterable([utf8.encode(_bodyText)]);
+      _bodyStream ??= new Stream.fromIterable([utf8.encode(_bodyText)]);
+    }
+    if (_body != null) {
+      throw StateError('Unable to convert body to Stream');
     }
     return null;
   }
 
-  /// Reads the [body] as String with [encoding]
+  /// Reads the body content as String with [encoding]
   Future<String> readAsString({Encoding encoding}) {
     // TODO: detect encoding from headers
     encoding ??= utf8;
@@ -205,12 +198,35 @@ class Response {
     if (_bodyBytes != null) {
       return new Future.value(encoding.decode(_bodyBytes));
     }
-    return encoding.decodeStream(body);
+    if (_bodyStream != null) {
+      return encoding.decodeStream(_bodyStream);
+    }
+    if (_body != null) {
+      throw StateError('Unable to convert body to String');
+    }
+    return null;
+  }
+
+  /// Reads the body content as bytes.
+  Future<List<int>> readAsBytes() async {
+    if (_bodyText != null) {
+      return utf8.encode(_bodyText);
+    }
+    if (_bodyBytes != null) {
+      return _bodyBytes;
+    }
+    if (_bodyStream != null) {
+      return buffer.readAsBytes(_bodyStream);
+    }
+    if (_body != null) {
+      throw StateError('Unable to convert body to bytes');
+    }
+    return null;
   }
 
   /// Completes when the underlying input stream has been read and completed.
   Future get done async {
-    await _bodyDone?.future;
+    await _doneCompleter?.future;
   }
 }
 
