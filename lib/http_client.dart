@@ -72,6 +72,22 @@ class Request {
       bodyBytes = body;
     } else if (body is Stream<List<int>>) {
       bodyStream = body;
+    } else if (body is Map<String, dynamic>) {
+      final parts = <String>[];
+      for (String key in body.keys) {
+        final keyEncoded = Uri.encodeQueryComponent(key);
+        void addValue(v) {
+          parts.add(keyEncoded + '=' + Uri.encodeQueryComponent(v.toString()));
+        }
+
+        final value = body[key];
+        if (value is List) {
+          value.forEach(addValue);
+        } else {
+          addValue(value);
+        }
+      }
+      bodyBytes = encoding.encode(parts.join('&'));
     } else if (body != null) {
       throw new Exception('Unable to parse body: $body');
     }

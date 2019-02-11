@@ -3,6 +3,7 @@
 ## 0.6.1
 
 - Explicit expiration in `UpdatingClient`.
+- Support form-encoded values as request body.
 
 ## 0.6.0
 
