@@ -9,8 +9,6 @@ export 'src/updating_client.dart';
 
 /// HTTP Client interface.
 abstract class Client {
-  // int get ongoingCount;
-
   /// Sends the [request] and returns the [Response]
   Future<Response> send(Request request);
 
