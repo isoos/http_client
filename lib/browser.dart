@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:html' as html;
 import 'dart:typed_data';
 
+import 'package:buffer/buffer.dart';
+
 import 'http_client.dart';
 export 'http_client.dart';
 
@@ -11,19 +13,20 @@ class BrowserClient implements Client {
   Future<Response> send(Request request) async {
     ByteBuffer buffer;
 
-    if (request.bodyBytes != null) {
-      buffer = new Uint8List.fromList(request.bodyBytes).buffer;
-    } else if (request.bodyStream != null) {
-      buffer = new Uint8List.fromList(
-              await request.bodyStream.fold([], (l1, l2) => l1..addAll(l2)))
-          .buffer;
+    if (request.body is List<int>) {
+      buffer = castBytes(request.body as List<int>).buffer;
+    } else if (request.body is StreamFn) {
+      final fn = request.body as StreamFn;
+      final data = await readAsBytes(await fn());
+      buffer = data.buffer;
     }
 
+    final sendData = buffer ?? request.body;
     final rs = await html.HttpRequest.request(
       request.uri.toString(),
       method: request.method,
       requestHeaders: request.headers?.toSimpleMap(),
-      sendData: buffer,
+      sendData: sendData,
     );
     final response = rs.response;
     final headers = new Headers(rs.responseHeaders);

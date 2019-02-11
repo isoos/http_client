@@ -7,7 +7,7 @@ import 'package:http_client/http_client.dart';
 void main() {
   test('String request body', () {
     final rq = Request('GET', 'http://example.com/', body: 'abc');
-    expect(utf8.decode(rq.bodyBytes), 'abc');
+    expect(utf8.decode(rq.body as List<int>), 'abc');
   });
 
   test('FORM params body', () {
@@ -15,6 +15,6 @@ void main() {
       'a': 1,
       'b': [2, 3],
     });
-    expect(utf8.decode(rq.bodyBytes), 'a=1&b=2&b=3');
+    expect(utf8.decode(rq.body as List<int>), 'a=1&b=2&b=3');
   });
 }

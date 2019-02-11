@@ -22,7 +22,7 @@ class CurlClient implements Client {
 
   @override
   Future<Response> send(Request request) async {
-    if (request.bodyBytes != null || request.bodyStream != null) {
+    if (request.body != null) {
       throw new Exception('Sending body is not yet supported.');
     }
     final List<String> args = [];

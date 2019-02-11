@@ -7,6 +7,9 @@ export 'src/headers.dart' show Headers;
 export 'src/tracking_client.dart';
 export 'src/updating_client.dart';
 
+/// A restartable input stream.
+typedef FutureOr<Stream<List<int>>> StreamFn();
+
 /// HTTP Client interface.
 abstract class Client {
   /// Sends the [request] and returns the [Response]
@@ -32,15 +35,10 @@ class Request {
   /// HTTP Headers
   final Headers headers;
 
-  /// The body content as stream (if any). If the bytes are available
-  /// synchronously, they will be put in [bodyBytes] and [bodyStream] will be
-  /// null.
-  final Stream<List<int>> bodyStream;
-
-  /// The body content as bytes (if any). If the bytes are available
-  /// asynchronously, they will be put in [bodyStream] and [bodyBytes] will be
-  /// null.
-  final List<int> bodyBytes;
+  /// The body content in a form that enables retries.
+  /// It can be String, List<int> (binary content), Map<String, dynamic> (form
+  /// data), or File (on console-only).
+  final dynamic body;
 
   /// The requested persistent connection state.
   final bool persistentConnection;
@@ -65,13 +63,10 @@ class Request {
     assert(uri is String || uri is Uri);
     final Uri parsedUri = uri is Uri ? uri : Uri.parse(uri.toString());
     List<int> bodyBytes;
-    Stream<List<int>> bodyStream;
     if (body is String) {
       bodyBytes = encoding.encode(body);
     } else if (body is List<int>) {
       bodyBytes = body;
-    } else if (body is Stream<List<int>>) {
-      bodyStream = body;
     } else if (body is Map<String, dynamic>) {
       final parts = <String>[];
       for (String key in body.keys) {
@@ -88,15 +83,15 @@ class Request {
         }
       }
       bodyBytes = encoding.encode(parts.join('&'));
-    } else if (body != null) {
-      throw new Exception('Unable to parse body: $body');
+    } else if (body is Stream<List<int>>) {
+      throw ArgumentError(
+          'Stream<List<int>> is not supported as body, use StreamFn');
     }
     return new Request._(
       method,
       parsedUri,
       wrapHeaders(headers),
-      bodyBytes,
-      bodyStream,
+      bodyBytes ?? body,
       persistentConnection,
       followRedirects,
       maxRedirects,
@@ -107,8 +102,7 @@ class Request {
     this.method,
     this.uri,
     this.headers,
-    this.bodyBytes,
-    this.bodyStream,
+    this.body,
     this.persistentConnection,
     this.followRedirects,
     this.maxRedirects,

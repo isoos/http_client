@@ -97,14 +97,22 @@ class ConsoleClient implements Client {
     }
 
     // sending body
-    if (request.bodyBytes != null) {
-      rq.add(request.bodyBytes);
+    if (request.body is List<int>) {
+      rq.add(request.body as List<int>);
       await rq.close();
-    } else if (request.bodyStream != null) {
-      await request.bodyStream.pipe(rq);
+    } else if (request.body is StreamFn) {
+      final fn = request.body as StreamFn;
+      final stream = await fn();
+      await stream.pipe(rq);
+    } else if (request.body is io.File) {
+      final file = request.body as io.File;
+      await file.openRead().pipe(rq);
+    } else if (request.body == null) {
+      await rq.close();
     } else {
-      await rq.close();
+      throw ArgumentError('Unknown request body: ${request.body}');
     }
+
     final rs = await rq.done;
     final Headers headers = new Headers();
     rs.headers.forEach((String key, List<String> values) {
