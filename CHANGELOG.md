@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.0+1
+
+- Fix: cleanup of past clients in `UpdatingClient`.
+
 ## 1.0.0
 
 **BREAKING CHANGES**

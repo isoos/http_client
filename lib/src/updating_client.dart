@@ -70,11 +70,14 @@ class UpdatingClient implements Client {
   }
 
   Future _cleanupPastClients(bool force) async {
-    final futures = _pastClients
+    if (_pastClients.isEmpty) return;
+    final pastClients = List<_Client>.from(_pastClients);
+    final futures = pastClients
         .map((c) => c._client.close(force: force || c._forceClose))
         .map((f) => f.whenComplete(() => null))
         .toList();
     await Future.wait(futures);
+    pastClients.forEach(_pastClients.remove);
   }
 
   Future<_Client> _allocate() async {
