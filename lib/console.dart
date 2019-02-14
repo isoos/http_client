@@ -61,10 +61,12 @@ class ConsoleClient implements Client {
   @override
   Future<Response> send(Request request) async {
     final rq = await _delegate.openUrl(request.method, request.uri);
+    final appliedHeaders = Set<String>();
 
     void applyHeader(Headers headers, String key) {
       final List<String> values = headers[key];
       if (values == null || values.isEmpty) return;
+      appliedHeaders.add(key.toLowerCase());
       if (values.length == 1) {
         rq.headers.set(key, values.single);
       } else {
@@ -72,19 +74,18 @@ class ConsoleClient implements Client {
       }
     }
 
-    if (request.headers != null) {
-      for (String key in request.headers.keys) {
-        applyHeader(request.headers, key);
-      }
+    void applyContentLength(int length) {
+      if (appliedHeaders.contains('content-length')) return;
+      rq.headers.set('Content-Length', length.toString());
     }
-    if (_headers != null) {
-      for (String key in _headers.keys) {
-        if (request.headers != null && request.headers.containsKey(key)) {
-          continue;
-        }
-        applyHeader(_headers, key);
-      }
-    }
+
+    request?.headers?.keys?.forEach((key) {
+      applyHeader(request.headers, key);
+    });
+    _headers?.keys?.forEach((key) {
+      if (appliedHeaders.contains(key)) return;
+      applyHeader(_headers, key);
+    });
 
     if (request.persistentConnection != null) {
       rq.persistentConnection = request.persistentConnection;
@@ -97,17 +98,18 @@ class ConsoleClient implements Client {
     }
 
     // sending body
-    if (request.body is List<int>) {
-      rq.add(request.body as List<int>);
+    final body = request.body;
+    if (body is List<int>) {
+      applyContentLength(body.length);
+      rq.add(body);
       await rq.close();
-    } else if (request.body is StreamFn) {
-      final fn = request.body as StreamFn;
-      final stream = await fn();
+    } else if (body is StreamFn) {
+      final stream = await body();
       await stream.pipe(rq);
-    } else if (request.body is io.File) {
-      final file = request.body as io.File;
-      await file.openRead().pipe(rq);
-    } else if (request.body == null) {
+    } else if (body is io.File) {
+      applyContentLength(await body.length());
+      await body.openRead().pipe(rq);
+    } else if (body == null) {
       await rq.close();
     } else {
       throw ArgumentError('Unknown request body: ${request.body}');

@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.1
+
+- Automatic `Content-Length` header when body is specified (in `ConsoleClient`).
+
 ## 1.0.0+1
 
 - Fix: cleanup of past clients in `UpdatingClient`.
