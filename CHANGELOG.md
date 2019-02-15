@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.2
+
+- Class-level `invalidateOnError` and `forceCloseOnError` for `UpdatingClient`.
+
 ## 1.0.1
 
 - Automatic `Content-Length` header when body is specified (in `ConsoleClient`).

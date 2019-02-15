@@ -13,6 +13,8 @@ class UpdatingClient implements Client {
   final CreateClientFn _createClientFn;
   final int _requestLimit;
   final Duration _timeLimit;
+  final bool _invalidateOnError;
+  final bool _forceCloseOnError;
 
   final _pastClients = <_Client>[];
   _Client _current;
@@ -24,9 +26,13 @@ class UpdatingClient implements Client {
     @required CreateClientFn createClientFn,
     int requestLimit = 1000,
     Duration timeLimit = const Duration(hours: 1),
+    bool invalidateOnError = false,
+    bool forceCloseOnError = false,
   })  : _createClientFn = createClientFn,
         _requestLimit = requestLimit,
-        _timeLimit = timeLimit;
+        _timeLimit = timeLimit,
+        _invalidateOnError = invalidateOnError,
+        _forceCloseOnError = forceCloseOnError;
 
   @override
   Future<Response> send(Request request) {
@@ -47,8 +53,11 @@ class UpdatingClient implements Client {
     try {
       return await fn(client._client);
     } catch (_) {
-      if (invalidateOnError || forceCloseOnError) {
-        client._forceClose = forceCloseOnError;
+      if (_invalidateOnError ||
+          invalidateOnError ||
+          _forceCloseOnError ||
+          forceCloseOnError) {
+        client._forceClose = _forceCloseOnError || forceCloseOnError;
         if (_current == client) {
           _current = null;
           _pastClients.add(client);
