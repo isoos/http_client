@@ -69,4 +69,7 @@ class TrackingClient implements Client {
     }
     await _delegate.close(force: force);
   }
+
+  @override
+  String toString() => _delegate.toString();
 }

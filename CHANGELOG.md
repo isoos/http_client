@@ -3,6 +3,7 @@
 ## 1.0.2
 
 - Class-level `invalidateOnError` and `forceCloseOnError` for `UpdatingClient`.
+- `TrackingClient.toString()` forwards to delegate client.
 
 ## 1.0.1
 
