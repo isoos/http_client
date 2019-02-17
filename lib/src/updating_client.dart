@@ -8,9 +8,13 @@ import 'tracking_client.dart';
 /// Creates a HTTP client asynchronously.
 typedef Future<Client> CreateClientFn();
 
+/// Closes a HTTP client.
+typedef Future CloseClientFn(TrackingClient client, bool forceClose);
+
 /// Automatically updates the underlying client after the specified use limits.
 class UpdatingClient implements Client {
   final CreateClientFn _createClientFn;
+  final CloseClientFn _closeClientFn;
   final int _requestLimit;
   final Duration _timeLimit;
   final bool _invalidateOnError;
@@ -24,11 +28,14 @@ class UpdatingClient implements Client {
   ///
   UpdatingClient({
     @required CreateClientFn createClientFn,
+    CloseClientFn closeClientFn,
     int requestLimit = 1000,
     Duration timeLimit = const Duration(hours: 1),
     bool invalidateOnError = false,
     bool forceCloseOnError = false,
   })  : _createClientFn = createClientFn,
+        _closeClientFn =
+            closeClientFn ?? ((client, force) => client.close(force: force)),
         _requestLimit = requestLimit,
         _timeLimit = timeLimit,
         _invalidateOnError = invalidateOnError,
@@ -75,14 +82,16 @@ class UpdatingClient implements Client {
     _isClosing = true;
     expireCurrent();
     await _cleanupPastClients(force);
-    await _current?._client?.close(force: force);
+    if (_current != null) {
+      await _closeClientFn(_current._client, force);
+    }
   }
 
   Future _cleanupPastClients(bool force) async {
     if (_pastClients.isEmpty) return;
     final pastClients = List<_Client>.from(_pastClients);
     final futures = pastClients
-        .map((c) => c._client.close(force: force || c._forceClose))
+        .map((c) => _closeClientFn(c._client, force || c._forceClose))
         .map((f) => f.whenComplete(() => null))
         .toList();
     await Future.wait(futures);
