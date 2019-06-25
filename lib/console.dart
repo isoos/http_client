@@ -108,7 +108,7 @@ class ConsoleClient implements Client {
       await stream.pipe(rq);
     } else if (body is io.File) {
       applyContentLength(await body.length());
-      await body.openRead().pipe(rq);
+      await body.openRead().cast<List<int>>().pipe(rq);
     } else if (body == null) {
       await rq.close();
     } else {
