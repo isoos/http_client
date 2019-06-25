@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.4
+
+- `Request.change` to override `url`, `headers` or `body`. `addHeader` to extend current headers.
+
 ## 1.0.3
 
 - `CloseClientFn` in `UpdatingClient`.

@@ -64,31 +64,7 @@ class Request {
   }) {
     assert(uri is String || uri is Uri);
     final Uri parsedUri = uri is Uri ? uri : Uri.parse(uri.toString());
-    List<int> bodyBytes;
-    if (body is String) {
-      bodyBytes = encoding.encode(body);
-    } else if (body is List<int>) {
-      bodyBytes = body;
-    } else if (body is Map<String, dynamic>) {
-      final parts = <String>[];
-      for (String key in body.keys) {
-        final keyEncoded = Uri.encodeQueryComponent(key);
-        void addValue(v) {
-          parts.add(keyEncoded + '=' + Uri.encodeQueryComponent(v.toString()));
-        }
-
-        final value = body[key];
-        if (value is List) {
-          value.forEach(addValue);
-        } else {
-          addValue(value);
-        }
-      }
-      bodyBytes = encoding.encode(parts.join('&'));
-    } else if (body is Stream<List<int>>) {
-      throw ArgumentError(
-          'Stream<List<int>> is not supported as body, use StreamFn');
-    }
+    final bodyBytes = _bodyBytes(body, encoding ?? utf8);
     return new Request._(
       method,
       parsedUri,
@@ -109,6 +85,51 @@ class Request {
     this.followRedirects,
     this.maxRedirects,
   );
+
+  /// Creates a new [Request] object by changing or augmenting the properties.
+  ///
+  /// When [uri], [headers] or [body] is specified, they will override the
+  /// original corresponding values.
+  ///
+  /// Use [patchHeaders] to keep the current headers and also add override its
+  /// values (if they already exist) or add new values (if they did not exist).
+  Request change({
+    dynamic uri,
+    dynamic headers,
+    dynamic patchHeaders,
+    dynamic body,
+    Encoding encoding = utf8,
+  }) {
+    Uri parsedUri;
+    if (uri != null) {
+      assert(uri is String || uri is Uri);
+      parsedUri = uri is Uri ? uri : Uri.parse(uri.toString());
+    }
+
+    Headers newHeaders = this.headers ?? Headers();
+    if (headers != null) {
+      newHeaders = wrapHeaders(headers);
+    }
+    if (patchHeaders != null) {
+      final patching = wrapHeaders(patchHeaders);
+      patching.keys.forEach((key) {
+        newHeaders.remove(key);
+        newHeaders.add(key, patching[key]);
+      });
+    }
+
+    final bodyBytes = _bodyBytes(body, encoding ?? utf8);
+
+    return Request._(
+      method,
+      parsedUri ?? this.uri,
+      newHeaders ?? headers,
+      bodyBytes ?? body ?? this.body,
+      persistentConnection,
+      followRedirects,
+      maxRedirects,
+    );
+  }
 }
 
 /// A HTTP Response object.
@@ -243,4 +264,33 @@ class RedirectInfo {
 
   ///
   RedirectInfo(this.statusCode, this.method, this.location);
+}
+
+List<int> _bodyBytes(dynamic body, Encoding encoding) {
+  List<int> bodyBytes;
+  if (body is String) {
+    bodyBytes = encoding.encode(body);
+  } else if (body is List<int>) {
+    bodyBytes = body;
+  } else if (body is Map<String, dynamic>) {
+    final parts = <String>[];
+    for (String key in body.keys) {
+      final keyEncoded = Uri.encodeQueryComponent(key);
+      void addValue(v) {
+        parts.add(keyEncoded + '=' + Uri.encodeQueryComponent(v.toString()));
+      }
+
+      final value = body[key];
+      if (value is List) {
+        value.forEach(addValue);
+      } else {
+        addValue(value);
+      }
+    }
+    bodyBytes = encoding.encode(parts.join('&'));
+  } else if (body is Stream<List<int>>) {
+    throw ArgumentError(
+        'Stream<List<int>> is not supported as body, use StreamFn');
+  }
+  return bodyBytes;
 }
