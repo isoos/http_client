@@ -26,7 +26,7 @@ class TrackingClient implements Client {
   @override
   Future<Response> send(Request request) async {
     if (_isClosed) {
-      throw new StateError('HTTP Client is already closed.');
+      throw StateError('HTTP Client is already closed.');
     }
     _ongoingCount++;
     Future rsf;

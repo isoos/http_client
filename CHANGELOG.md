@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.0
+
+- Updated sources: removed `new` keyword.
+- `Request.timeout` for limiting the timeout at the lowest level of the network, other framework-related operations do
+  not count against it.
+
 ## 1.0.4
 
 - `Request.change` to override `url`, `headers` or `body`. `addHeader` to extend current headers.

@@ -1,12 +1,12 @@
 // ignore_for_file: comment_references
 
 /// HTTP Headers
-/// [Headers] object is mutable and new values can be added up until
+/// [Headers] object is mutable and values can be added up until
 /// [Client.send] is called.
 class Headers {
   final Map<String, List<String>> _values = {};
 
-  /// Creates a new HTTP Header object, optinally using [values] as initializer.
+  /// Creates a HTTP Header object, optinally using [values] as initializer.
   Headers([Map<String, dynamic> values]) {
     values?.forEach(add);
   }
@@ -52,7 +52,7 @@ class Headers {
 
   /// Gets a deep copy of the values.
   Map<String, List<String>> toMap() {
-    return _values.map((k, v) => new MapEntry(k, new List<String>.from(v)));
+    return _values.map((k, v) => MapEntry(k, List<String>.from(v)));
   }
 }
 
@@ -61,7 +61,7 @@ Headers wrapHeaders(dynamic headers) {
   if (headers == null) return null;
   if (headers is Headers) return headers;
   if (headers is Map<String, dynamic>) {
-    return new Headers(headers);
+    return Headers(headers);
   }
-  throw new ArgumentError('Unknown headers type: ${headers.runtimeType}');
+  throw ArgumentError('Unknown headers type: ${headers.runtimeType}');
 }

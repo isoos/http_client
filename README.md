@@ -22,7 +22,7 @@ For console apps:
 import 'package:http_client/console.dart' as http;
 
 main() async {
-  http.Client client = new http.ConsoleClient();
+  final client = http.ConsoleClient();
   // use the client, eg.:
   // new MyServiceClient(client)
   await client.close();
@@ -35,7 +35,7 @@ For browser use, only change the first import:
 import 'package:http_client/browser.dart' as http;
 
 main() {
-  http.Client client = new http.BrowserClient();
+  final client = http.BrowserClient();
   // use the client, eg.:
   // new MyServiceClient(client)
   await client.close();

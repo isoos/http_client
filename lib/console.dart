@@ -37,7 +37,7 @@ class ConsoleClient implements Client {
     /// Set to empty string to disable setting the User-Agent header automatically.
     String userAgent,
   }) {
-    final delegate = new io.HttpClient();
+    final delegate = io.HttpClient();
     if (proxy != null) {
       delegate.findProxy = (uri) => proxy;
     } else if (proxyFn != null) {
@@ -55,7 +55,7 @@ class ConsoleClient implements Client {
     if (userAgent != null) {
       delegate.userAgent = userAgent.isEmpty ? null : userAgent;
     }
-    return new ConsoleClient._(delegate, wrapHeaders(headers));
+    return ConsoleClient._(delegate, wrapHeaders(headers));
   }
 
   @override
@@ -115,19 +115,23 @@ class ConsoleClient implements Client {
       throw ArgumentError('Unknown request body: ${request.body}');
     }
 
-    final rs = await rq.done;
-    final Headers headers = new Headers();
+    Future<io.HttpClientResponse> rsf = rq.done;
+    if (request.timeout != null && request.timeout > Duration.zero) {
+      rsf = rsf.timeout(request.timeout);
+    }
+    final rs = await rsf;
+    final Headers headers = Headers();
     rs.headers.forEach((String key, List<String> values) {
       headers.add(key, values);
     });
 
-    return new Response(
+    return Response(
       rs.statusCode,
       rs.reasonPhrase,
       headers,
       rs,
       redirects: rs?.redirects
-          ?.map((ri) => new RedirectInfo(ri.statusCode, ri.method, ri.location))
+          ?.map((ri) => RedirectInfo(ri.statusCode, ri.method, ri.location))
           ?.toList(),
       requestAddress: rq?.connectionInfo?.remoteAddress?.address,
       responseAddress: rs?.connectionInfo?.remoteAddress?.address,

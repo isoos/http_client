@@ -23,7 +23,7 @@ class CurlClient implements Client {
   @override
   Future<Response> send(Request request) async {
     if (request.body != null) {
-      throw new Exception('Sending body is not yet supported.');
+      throw Exception('Sending body is not yet supported.');
     }
     final List<String> args = [];
     if (request.followRedirects == null || request.followRedirects) {
@@ -41,11 +41,15 @@ class CurlClient implements Client {
     // if (data != null) args.addAll(['--data', data]);
     args.add(request.uri.toString());
     // TODO: handle status code and reason phrase
-    final ProcessResult pr =
-        await Process.run(executable ?? 'curl', args, stdoutEncoding: null);
+    Future<ProcessResult> prf =
+        Process.run(executable ?? 'curl', args, stdoutEncoding: null);
+    if (request.timeout != null && request.timeout > Duration.zero) {
+      prf = prf.timeout(request.timeout);
+    }
+    final pr = await prf;
     final list = (pr.stdout as List).cast<int>();
-    return new Response(pr.exitCode == 0 ? 200 : -1, null, new Headers(),
-        new Stream.fromIterable(<List<int>>[list]));
+    return Response(pr.exitCode == 0 ? 200 : -1, null, Headers(),
+        Stream.fromIterable(<List<int>>[list]));
   }
 
   @override

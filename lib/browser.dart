@@ -22,19 +22,23 @@ class BrowserClient implements Client {
     }
 
     final sendData = buffer ?? request.body;
-    final rs = await html.HttpRequest.request(
+    Future<html.HttpRequest> rsf = html.HttpRequest.request(
       request.uri.toString(),
       method: request.method,
       requestHeaders: request.headers?.toSimpleMap(),
       sendData: sendData,
     );
+    if (request.timeout != null && request.timeout > Duration.zero) {
+      rsf = rsf.timeout(request.timeout);
+    }
+    final rs = await rsf;
     final response = rs.response;
-    final headers = new Headers(rs.responseHeaders);
+    final headers = Headers(rs.responseHeaders);
     if (response is ByteBuffer) {
-      return new Response(
+      return Response(
           rs.status, rs.statusText, headers, response.asUint8List());
     } else {
-      return new Response(rs.status, rs.statusText, headers, response);
+      return Response(rs.status, rs.statusText, headers, response);
     }
   }
 

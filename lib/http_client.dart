@@ -51,6 +51,10 @@ class Request {
   /// The maximum number of redirects to follow when [followRedirects] is `true`.
   final int maxRedirects;
 
+  /// The timeout for the underlying HTTP request. Framework-related overheads,
+  /// e.g. scheduling or proxy initialization is not counted against this time.
+  final Duration timeout;
+
   /// Creates a HTTP Request object.
   factory Request(
     String method,
@@ -61,11 +65,12 @@ class Request {
     bool persistentConnection,
     bool followRedirects,
     int maxRedirects,
+    Duration timeout,
   }) {
     assert(uri is String || uri is Uri);
     final Uri parsedUri = uri is Uri ? uri : Uri.parse(uri.toString());
     final bodyBytes = _bodyBytes(body, encoding ?? utf8);
-    return new Request._(
+    return Request._(
       method,
       parsedUri,
       wrapHeaders(headers),
@@ -73,6 +78,7 @@ class Request {
       persistentConnection,
       followRedirects,
       maxRedirects,
+      timeout,
     );
   }
 
@@ -84,15 +90,16 @@ class Request {
     this.persistentConnection,
     this.followRedirects,
     this.maxRedirects,
+    this.timeout,
   );
 
-  /// Creates a new [Request] object by changing or augmenting the properties.
+  /// Creates a [Request] object by changing or augmenting the properties.
   ///
   /// When [uri], [headers] or [body] is specified, they will override the
   /// original corresponding values.
   ///
   /// Use [patchHeaders] to keep the current headers and also add override its
-  /// values (if they already exist) or add new values (if they did not exist).
+  /// values (if they already exist) or add values (if they did not exist).
   Request change({
     dynamic uri,
     dynamic headers,
@@ -128,6 +135,7 @@ class Request {
       persistentConnection,
       followRedirects,
       maxRedirects,
+      timeout,
     );
   }
 }
@@ -197,11 +205,11 @@ class Response {
       return _bodyStream;
     }
     if (_bodyBytes != null) {
-      _bodyStream ??= new Stream.fromIterable([_bodyBytes]);
+      _bodyStream ??= Stream.fromIterable([_bodyBytes]);
       return _bodyStream;
     }
     if (_bodyText != null) {
-      _bodyStream ??= new Stream.fromIterable([utf8.encode(_bodyText)]);
+      _bodyStream ??= Stream.fromIterable([utf8.encode(_bodyText)]);
     }
     if (_body != null) {
       throw StateError('Unable to convert body to Stream');
@@ -214,10 +222,10 @@ class Response {
     // TODO: detect encoding from headers
     encoding ??= utf8;
     if (encoding == utf8 && _bodyText != null) {
-      return new Future.value(_bodyText);
+      return Future.value(_bodyText);
     }
     if (_bodyBytes != null) {
-      return new Future.value(encoding.decode(_bodyBytes));
+      return Future.value(encoding.decode(_bodyBytes));
     }
     if (_bodyStream != null) {
       return encoding.decodeStream(_bodyStream);
