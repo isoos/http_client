@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.2.0
+
+**BEHAVIOUR CHANGES**
+- `Headers` forces keys to be lowercase (part of the HTTP/2 spec).
+- `Request` validates arguments differently, may not throw exception where
+  previously thrown (e.g. allows `Stream<List<int>>` as body).
+
+New features:
+
+- `Request` constructor now accepts:
+  - `form` (url-encoded body and also sets `content-type` header)
+  - `json` (json-encoded body and also sets `content-type` header)
+  - `cookies` (sets `cookie` header)
+
 ## 1.1.0
 
 - Updated sources: removed `new` keyword.

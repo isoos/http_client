@@ -11,18 +11,22 @@ class Headers {
     values?.forEach(add);
   }
 
+  /// Creates a header object with the copy if the current one's content.
+  Headers clone() => Headers(_values);
+
   /// Returns the header names set.
   Iterable<String> get keys => _values.keys;
 
   /// Returns the values set for [header].
-  List<String> operator [](String header) => _values[header];
+  List<String> operator [](String header) => _values[header.toLowerCase()];
 
   /// Add [header] with [value].
   ///
   /// [value] can be a List<String> or a String.
   void add(String header, dynamic value) {
     if (value == null) return;
-    final List<String> list = _values.putIfAbsent(header, () => []);
+    final List<String> list =
+        _values.putIfAbsent(header.toLowerCase(), () => []);
     if (value is List) {
       list.addAll(value.map((o) => o.toString()));
     } else {
@@ -32,12 +36,12 @@ class Headers {
 
   /// Remove [header].
   void remove(String header) {
-    _values.remove(header);
+    _values.remove(header.toLowerCase());
   }
 
   /// Whether the [key] is specified.
   bool containsKey(String key) {
-    return _values.containsKey(key);
+    return _values.containsKey(key.toLowerCase());
   }
 
   /// Converts values to a simple String -> String Map.
@@ -57,11 +61,14 @@ class Headers {
 }
 
 /// Properly wraps headers.
-Headers wrapHeaders(dynamic headers) {
-  if (headers == null) return null;
-  if (headers is Headers) return headers;
-  if (headers is Map<String, dynamic>) {
+Headers wrapHeaders(dynamic headers, {bool clone = false}) {
+  if (headers == null) {
+    return clone ? Headers() : null;
+  } else if (headers is Headers) {
+    return clone ? headers.clone() : headers;
+  } else if (headers is Map<String, dynamic>) {
     return Headers(headers);
+  } else {
+    throw ArgumentError('Unknown headers type: ${headers.runtimeType}');
   }
-  throw ArgumentError('Unknown headers type: ${headers.runtimeType}');
 }

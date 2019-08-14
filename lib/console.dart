@@ -55,7 +55,7 @@ class ConsoleClient implements Client {
     if (userAgent != null) {
       delegate.userAgent = userAgent.isEmpty ? null : userAgent;
     }
-    return ConsoleClient._(delegate, wrapHeaders(headers));
+    return ConsoleClient._(delegate, wrapHeaders(headers, clone: true));
   }
 
   @override
@@ -106,6 +106,8 @@ class ConsoleClient implements Client {
     } else if (body is StreamFn) {
       final stream = await body();
       await stream.pipe(rq);
+    } else if (body is Stream<List<int>>) {
+      await body.pipe(rq);
     } else if (body is io.File) {
       applyContentLength(await body.length());
       await body.openRead().cast<List<int>>().pipe(rq);

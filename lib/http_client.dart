@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:convert';
+import 'dart:convert' as c;
 
 import 'package:buffer/buffer.dart' as buffer;
 
@@ -37,9 +37,8 @@ class Request {
   /// HTTP Headers
   final Headers headers;
 
-  /// The body content in a form that enables retries.
-  /// It can be String, List<int> (binary content), Map<String, dynamic> (form
-  /// data), or File (on console-only).
+  /// The body content in a form that enables retries (in most cases).
+  /// It can be List<int> (binary content), [StreamFn], or File (on console-only).
   final dynamic body;
 
   /// The requested persistent connection state.
@@ -61,20 +60,25 @@ class Request {
     dynamic uri, {
     dynamic headers,
     dynamic body,
-    Encoding encoding = utf8,
+    Map<String, dynamic> form,
+    dynamic json,
+    Map<String, String> cookies,
+    c.Encoding encoding,
     bool persistentConnection,
     bool followRedirects,
     int maxRedirects,
     Duration timeout,
   }) {
     assert(uri is String || uri is Uri);
+    encoding ??= c.utf8;
     final Uri parsedUri = uri is Uri ? uri : Uri.parse(uri.toString());
-    final bodyBytes = _bodyBytes(body, encoding ?? utf8);
+    final newHeaders = wrapHeaders(headers, clone: true);
+    body = _buildBody(body, encoding, newHeaders, form, json, cookies);
     return Request._(
       method,
       parsedUri,
-      wrapHeaders(headers),
-      bodyBytes ?? body,
+      newHeaders,
+      body,
       persistentConnection,
       followRedirects,
       maxRedirects,
@@ -105,18 +109,21 @@ class Request {
     dynamic headers,
     dynamic patchHeaders,
     dynamic body,
-    Encoding encoding = utf8,
+    Map<String, dynamic> form,
+    Map<String, dynamic> json,
+    Map<String, String> cookies,
+    c.Encoding encoding,
   }) {
+    encoding ??= c.utf8;
     Uri parsedUri;
     if (uri != null) {
       assert(uri is String || uri is Uri);
       parsedUri = uri is Uri ? uri : Uri.parse(uri.toString());
     }
 
-    Headers newHeaders = this.headers ?? Headers();
-    if (headers != null) {
-      newHeaders = wrapHeaders(headers);
-    }
+    final newHeaders = headers == null
+        ? this.headers.clone()
+        : wrapHeaders(headers, clone: true);
     if (patchHeaders != null) {
       final patching = wrapHeaders(patchHeaders);
       patching.keys.forEach((key) {
@@ -125,13 +132,14 @@ class Request {
       });
     }
 
-    final bodyBytes = _bodyBytes(body, encoding ?? utf8);
+    final newBody = _buildBody(
+        body ?? this.body, encoding, newHeaders, form, json, cookies);
 
     return Request._(
       method,
       parsedUri ?? this.uri,
-      newHeaders ?? headers,
-      bodyBytes ?? body ?? this.body,
+      newHeaders,
+      newBody,
       persistentConnection,
       followRedirects,
       maxRedirects,
@@ -209,7 +217,7 @@ class Response {
       return _bodyStream;
     }
     if (_bodyText != null) {
-      _bodyStream ??= Stream.fromIterable([utf8.encode(_bodyText)]);
+      _bodyStream ??= Stream.fromIterable([c.utf8.encode(_bodyText)]);
     }
     if (_body != null) {
       throw StateError('Unable to convert body to Stream');
@@ -218,10 +226,10 @@ class Response {
   }
 
   /// Reads the body content as String with [encoding]
-  Future<String> readAsString({Encoding encoding}) {
+  Future<String> readAsString({c.Encoding encoding}) {
     // TODO: detect encoding from headers
-    encoding ??= utf8;
-    if (encoding == utf8 && _bodyText != null) {
+    encoding ??= c.utf8;
+    if (encoding == c.utf8 && _bodyText != null) {
       return Future.value(_bodyText);
     }
     if (_bodyBytes != null) {
@@ -239,7 +247,7 @@ class Response {
   /// Reads the body content as bytes.
   Future<List<int>> readAsBytes() async {
     if (_bodyText != null) {
-      return utf8.encode(_bodyText);
+      return c.utf8.encode(_bodyText);
     }
     if (_bodyBytes != null) {
       return _bodyBytes;
@@ -274,31 +282,64 @@ class RedirectInfo {
   RedirectInfo(this.statusCode, this.method, this.location);
 }
 
-List<int> _bodyBytes(dynamic body, Encoding encoding) {
-  List<int> bodyBytes;
-  if (body is String) {
-    bodyBytes = encoding.encode(body);
-  } else if (body is List<int>) {
-    bodyBytes = body;
-  } else if (body is Map<String, dynamic>) {
-    final parts = <String>[];
-    for (String key in body.keys) {
-      final keyEncoded = Uri.encodeQueryComponent(key);
-      void addValue(v) {
-        parts.add(keyEncoded + '=' + Uri.encodeQueryComponent(v.toString()));
-      }
-
-      final value = body[key];
-      if (value is List) {
-        value.forEach(addValue);
-      } else {
-        addValue(value);
-      }
+String _encodeFormData(Map<String, dynamic> formData) {
+  final parts = <String>[];
+  for (String key in formData.keys) {
+    final keyEncoded = Uri.encodeQueryComponent(key);
+    void addValue(v) {
+      parts.add(keyEncoded + '=' + Uri.encodeQueryComponent(v.toString()));
     }
-    bodyBytes = encoding.encode(parts.join('&'));
-  } else if (body is Stream<List<int>>) {
-    throw ArgumentError(
-        'Stream<List<int>> is not supported as body, use StreamFn');
+
+    final value = formData[key];
+    if (value is Iterable) {
+      value.forEach(addValue);
+    } else {
+      addValue(value);
+    }
   }
-  return bodyBytes;
+  return parts.join('&');
+}
+
+dynamic _buildBody(
+    oldBody,
+    c.Encoding encoding,
+    Headers newHeaders,
+    Map<String, dynamic> form,
+    Map<String, dynamic> json,
+    Map<String, String> cookies) {
+  dynamic body = oldBody;
+  String contentType;
+  if (form != null) {
+    if (body != null) {
+      throw ArgumentError('body is specified multiple times (form)');
+    }
+    body = _encodeFormData(form);
+    contentType = 'application/x-www-form-urlencoded';
+  }
+  if (json != null) {
+    if (body != null) {
+      throw ArgumentError('body is specified multiple times (json)');
+    }
+    body = c.json.encode(json);
+    contentType = 'application/json';
+  }
+  if (contentType != null) {
+    contentType += '; charset=${encoding.name}';
+  }
+  if (body is String) {
+    body = encoding.encode(body);
+  } else if (body is Map<String, dynamic>) {
+    body = encoding.encode(_encodeFormData(body));
+  }
+  if (!newHeaders.containsKey('content-type')) {
+    newHeaders.add('content-type', contentType);
+  }
+  if (cookies != null) {
+    if (newHeaders.containsKey('cookie')) {
+      throw ArgumentError('cookie header is already specified.');
+    }
+    final v = cookies.entries.map((e) => '${e.key}=${e.value}').join('; ');
+    newHeaders.add('cookie', v);
+  }
+  return body;
 }

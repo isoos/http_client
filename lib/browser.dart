@@ -13,11 +13,13 @@ class BrowserClient implements Client {
   Future<Response> send(Request request) async {
     ByteBuffer buffer;
 
-    if (request.body is List<int>) {
-      buffer = castBytes(request.body as List<int>).buffer;
-    } else if (request.body is StreamFn) {
-      final fn = request.body as StreamFn;
-      final data = await readAsBytes(await fn());
+    final body = request.body;
+    if (body is List<int>) {
+      buffer = castBytes(body).buffer;
+    } else if (body is Stream<List<int>>) {
+      buffer = (await readAsBytes(body)).buffer;
+    } else if (body is StreamFn) {
+      final data = await readAsBytes(await body());
       buffer = data.buffer;
     }
 
