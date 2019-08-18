@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.1
+
+- Fix timeout handling in `ConsoleClient`.
+
 ## 1.2.0
 
 **BEHAVIOUR CHANGES**

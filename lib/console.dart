@@ -60,7 +60,26 @@ class ConsoleClient implements Client {
 
   @override
   Future<Response> send(Request request) async {
-    final rq = await _delegate.openUrl(request.method, request.uri);
+    final sw = Stopwatch()..start();
+
+    Future<R> _timeout<R>(Future<R> fn()) async {
+      if (request.timeout != null && request.timeout > Duration.zero) {
+        final elapsed = sw.elapsed;
+        if (elapsed >= request.timeout) {
+          throw TimeoutException(null, request.timeout);
+        } else {
+          final diff = request.timeout - elapsed;
+          return fn().timeout(diff,
+              onTimeout: () async =>
+                  throw TimeoutException(null, request.timeout));
+        }
+      } else {
+        return fn();
+      }
+    }
+
+    final rq =
+        await _timeout(() => _delegate.openUrl(request.method, request.uri));
     final appliedHeaders = Set<String>();
 
     void applyHeader(Headers headers, String key) {
@@ -102,26 +121,22 @@ class ConsoleClient implements Client {
     if (body is List<int>) {
       applyContentLength(body.length);
       rq.add(body);
-      await rq.close();
+      await _timeout(() => rq.close());
     } else if (body is StreamFn) {
       final stream = await body();
-      await stream.pipe(rq);
+      await _timeout(() => stream.pipe(rq));
     } else if (body is Stream<List<int>>) {
-      await body.pipe(rq);
+      await _timeout(() => body.pipe(rq));
     } else if (body is io.File) {
       applyContentLength(await body.length());
-      await body.openRead().cast<List<int>>().pipe(rq);
+      await _timeout(() => body.openRead().cast<List<int>>().pipe(rq));
     } else if (body == null) {
-      await rq.close();
+      await _timeout(() => rq.close());
     } else {
       throw ArgumentError('Unknown request body: ${request.body}');
     }
 
-    Future<io.HttpClientResponse> rsf = rq.done;
-    if (request.timeout != null && request.timeout > Duration.zero) {
-      rsf = rsf.timeout(request.timeout);
-    }
-    final rs = await rsf;
+    final rs = await _timeout(() => rq.done);
     final Headers headers = Headers();
     rs.headers.forEach((String key, List<String> values) {
       headers.add(key, values);
