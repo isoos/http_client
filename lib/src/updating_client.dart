@@ -20,6 +20,7 @@ class UpdatingClient implements Client {
   final bool _invalidateOnError;
   final bool _forceCloseOnError;
 
+  Timer _cleanupTimer;
   final _pastClients = <_Client>[];
   _Client _current;
   Completer _nextCompleter;
@@ -55,7 +56,7 @@ class UpdatingClient implements Client {
     bool invalidateOnError = false,
     bool forceCloseOnError = false,
   }) async {
-    await _cleanupPastClients(false);
+    _initCleanupTimer();
     final client = await _allocate();
     try {
       return await fn(client._client);
@@ -73,7 +74,6 @@ class UpdatingClient implements Client {
       rethrow;
     } finally {
       await _release(client);
-      await _cleanupPastClients(false);
     }
   }
 
@@ -81,18 +81,29 @@ class UpdatingClient implements Client {
   Future close({bool force = false}) async {
     _isClosing = true;
     expireCurrent();
+    _cleanupTimer?.cancel();
+    _cleanupTimer = null;
     await _cleanupPastClients(force);
     if (_current != null) {
       await _closeClientFn(_current._client, force);
     }
   }
 
-  Future _cleanupPastClients(bool force) async {
+  void _initCleanupTimer() {
+    if (_cleanupTimer != null) return;
+    _cleanupTimer = Timer.periodic(Duration(minutes: 4), (_) {
+      if (_pastClients.isEmpty) return;
+      _cleanupPastClients(false, Duration(minutes: 3, seconds: 45));
+    });
+  }
+
+  Future _cleanupPastClients(bool force, [Duration timeout]) async {
     if (_pastClients.isEmpty) return;
     final pastClients = List<_Client>.from(_pastClients);
     final futures = pastClients
         .map((c) => _closeClientFn(c._client, force || c._forceClose))
-        .map((f) => f.whenComplete(() => null))
+        .map((f) => timeout == null ? null : f.timeout(timeout))
+        .map((f) => f.catchError((_) async => null))
         .toList();
     await Future.wait(futures);
     pastClients.forEach(_pastClients.remove);

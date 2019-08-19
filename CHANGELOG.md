@@ -3,6 +3,7 @@
 ## 1.2.2
 
 - Simplify timeout code in `ConsoleClient` and `BrowserClient`.
+- Separate cleanup with Timer in `UpdatingClient`.
 
 ## 1.2.1
 
