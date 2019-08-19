@@ -11,7 +11,7 @@ export 'http_client.dart';
 class BrowserClient implements Client {
   @override
   Future<Response> send(Request request) async {
-    if (request.timeout == null && request.timeout > Duration.zero) {
+    if (request.timeout != null && request.timeout > Duration.zero) {
       return _send(request).timeout(request.timeout);
     } else {
       return _send(request);
