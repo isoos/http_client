@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.2
+
+- Simplify timeout code in `ConsoleClient` and `BrowserClient`.
+
 ## 1.2.1
 
 - Fix timeout handling in `ConsoleClient`.
