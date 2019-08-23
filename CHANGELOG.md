@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.2+2
+
+- Fix NPE in `UpdatingClient`.
+
 ## 1.2.2+1
 
 - Fix NPE.

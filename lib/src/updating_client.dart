@@ -102,7 +102,7 @@ class UpdatingClient implements Client {
     final pastClients = List<_Client>.from(_pastClients);
     final futures = pastClients
         .map((c) => _closeClientFn(c._client, force || c._forceClose))
-        .map((f) => timeout == null ? null : f.timeout(timeout))
+        .map((f) => timeout == null ? f : f.timeout(timeout))
         .map((f) => f.catchError((_) async => null))
         .toList();
     await Future.wait(futures);
