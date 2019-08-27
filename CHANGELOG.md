@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.0
+
+- `PkgHttpAdapter` to enable drop-in replacement for `package:http` `Client` uses.
+
 ## 1.2.2+2
 
 - Fix NPE in `UpdatingClient`.
