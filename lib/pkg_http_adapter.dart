@@ -36,7 +36,7 @@ class PkgHttpAdapter extends h.BaseClient implements h.Client {
       reasonPhrase: rs.reasonPhrase,
       request: request,
       isRedirect: rs.redirects != null && rs.redirects.isNotEmpty,
-      contentLength: int.tryParse(rs.headers['content-length'] ?? ''),
+      contentLength: int.tryParse(rs.headers['content-length']?.first ?? ''),
     );
   }
 

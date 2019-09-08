@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.1
+
+- Fixed header handling in `PkgHttpAdapter`.
+
 ## 1.3.0
 
 - `PkgHttpAdapter` to enable drop-in replacement for `package:http` `Client` uses.
