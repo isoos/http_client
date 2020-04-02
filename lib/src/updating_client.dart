@@ -6,10 +6,10 @@ import '../http_client.dart';
 import 'tracking_client.dart';
 
 /// Creates a HTTP client asynchronously.
-typedef Future<Client> CreateClientFn();
+typedef CreateClientFn = Future<Client> Function();
 
 /// Closes a HTTP client.
-typedef Future CloseClientFn(TrackingClient client, bool forceClose);
+typedef CloseClientFn = Future Function(TrackingClient client, bool forceClose);
 
 /// Automatically updates the underlying client after the specified use limits.
 class UpdatingClient implements Client {
@@ -52,7 +52,7 @@ class UpdatingClient implements Client {
   ///
   /// The client remains the same until the function completes.
   Future<R> withClient<R>(
-    Future<R> fn(TrackingClient client), {
+    Future<R> Function(TrackingClient client) fn, {
     bool invalidateOnError = false,
     bool forceCloseOnError = false,
   }) async {

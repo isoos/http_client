@@ -25,7 +25,7 @@ class CurlClient implements Client {
     if (request.body != null) {
       throw Exception('Sending body is not yet supported.');
     }
-    final List<String> args = [];
+    final args = <String>[];
     if (request.followRedirects == null || request.followRedirects) {
       args.add('-L');
     }
@@ -35,14 +35,13 @@ class CurlClient implements Client {
     }
     if (userAgent != null) args.addAll(['-A', userAgent]);
     if (socksHostPort != null) args.addAll(['--socks5', socksHostPort]);
-    final String method = request.method ?? 'GET';
+    final method = request.method ?? 'GET';
     args.addAll(['-X', method.toUpperCase()]);
     // TODO: add data processing, e.g. for strings:
     // if (data != null) args.addAll(['--data', data]);
     args.add(request.uri.toString());
     // TODO: handle status code and reason phrase
-    Future<ProcessResult> prf =
-        Process.run(executable ?? 'curl', args, stdoutEncoding: null);
+    var prf = Process.run(executable ?? 'curl', args, stdoutEncoding: null);
     if (request.timeout != null && request.timeout > Duration.zero) {
       prf = prf.timeout(request.timeout);
     }

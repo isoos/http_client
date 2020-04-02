@@ -25,8 +25,7 @@ class Headers {
   /// [value] can be a List<String> or a String.
   void add(String header, dynamic value) {
     if (value == null) return;
-    final List<String> list =
-        _values.putIfAbsent(header.toLowerCase(), () => []);
+    final list = _values.putIfAbsent(header.toLowerCase(), () => []);
     if (value is List) {
       list.addAll(value.map((o) => o.toString()));
     } else {
@@ -47,7 +46,7 @@ class Headers {
   /// Converts values to a simple String -> String Map.
   /// When multiple header values are present, only the last value is is used.
   Map<String, String> toSimpleMap() {
-    final Map<String, String> result = {};
+    final result = <String, String>{};
     _values.forEach((String header, List<String> values) {
       result[header] = values.last;
     });

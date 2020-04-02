@@ -10,7 +10,7 @@ export 'src/tracking_client.dart';
 export 'src/updating_client.dart';
 
 /// A restartable input stream.
-typedef FutureOr<Stream<List<int>>> StreamFn();
+typedef StreamFn = FutureOr<Stream<List<int>>> Function();
 
 /// HTTP Client interface.
 abstract class Client {
@@ -71,7 +71,7 @@ class Request {
   }) {
     assert(uri is String || uri is Uri);
     encoding ??= c.utf8;
-    final Uri parsedUri = uri is Uri ? uri : Uri.parse(uri.toString());
+    final parsedUri = uri is Uri ? uri : Uri.parse(uri.toString());
     final newHeaders = wrapHeaders(headers, clone: true);
     body = _buildBody(body, encoding, newHeaders, form, json, cookies);
     return Request._(
@@ -284,7 +284,7 @@ class RedirectInfo {
 
 String _encodeFormData(Map<String, dynamic> formData) {
   final parts = <String>[];
-  for (String key in formData.keys) {
+  for (final key in formData.keys) {
     final keyEncoded = Uri.encodeQueryComponent(key);
     void addValue(v) {
       parts.add(keyEncoded + '=' + Uri.encodeQueryComponent(v.toString()));

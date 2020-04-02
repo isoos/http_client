@@ -19,7 +19,7 @@ class ConsoleClient implements Client {
   /// Return format should be e.g. ""PROXY host:port; PROXY host2:port2; DIRECT"
   factory ConsoleClient({
     String proxy,
-    String proxyFn(Uri uri),
+    String Function(Uri uri) proxyFn,
 
     /* Headers | Map */
     dynamic headers,
@@ -69,10 +69,10 @@ class ConsoleClient implements Client {
 
   Future<Response> _send(Request request) async {
     final rq = await _delegate.openUrl(request.method, request.uri);
-    final appliedHeaders = Set<String>();
+    final appliedHeaders = <String>{};
 
     void applyHeader(Headers headers, String key) {
-      final List<String> values = headers[key];
+      final values = headers[key];
       if (values == null || values.isEmpty) return;
       appliedHeaders.add(key.toLowerCase());
       if (values.length == 1) {
@@ -126,7 +126,7 @@ class ConsoleClient implements Client {
     }
 
     final rs = await rq.done;
-    final Headers headers = Headers();
+    final headers = Headers();
     rs.headers.forEach((String key, List<String> values) {
       headers.add(key, values);
     });

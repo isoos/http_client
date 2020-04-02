@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.0
+
+- Updated code to use latest Dart style guide.
+
 ## 1.3.1
 
 - Fixed header handling in `PkgHttpAdapter`.
