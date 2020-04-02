@@ -3,6 +3,7 @@
 ## 1.4.0
 
 - Updated code to use latest Dart style guide.
+- Support to ignore bad certificates with `ConsoleClient(ignoreBadCertificates: true)`.
 
 ## 1.3.1
 

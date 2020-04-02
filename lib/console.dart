@@ -36,7 +36,12 @@ class ConsoleClient implements Client {
     /// The default value of the `User-Agent` header for all requests.
     /// Set to empty string to disable setting the User-Agent header automatically.
     String userAgent,
+
+    /// Whether to silently ignore bad certificates.
+    /// Use it only on known servers with demo/expired SSL certs.
+    bool ignoreBadCertificates,
   }) {
+    ignoreBadCertificates ??= false;
     final delegate = io.HttpClient();
     if (proxy != null) {
       delegate.findProxy = (uri) => proxy;
@@ -54,6 +59,9 @@ class ConsoleClient implements Client {
     }
     if (userAgent != null) {
       delegate.userAgent = userAgent.isEmpty ? null : userAgent;
+    }
+    if (ignoreBadCertificates) {
+      delegate.badCertificateCallback = (cert, host, port) => true;
     }
     return ConsoleClient._(delegate, wrapHeaders(headers, clone: true));
   }
