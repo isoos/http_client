@@ -4,6 +4,22 @@ import 'dart:io';
 import 'http_client.dart';
 export 'http_client.dart';
 
+/// SOCKS is a protocol used for proxies and curl supports it. curl supports both SOCKS version 4 as well as version 5, and both versions come in two flavors.
+/// https://ec.haxx.se/usingcurl/usingcurl-proxies#socks-types
+enum CurlSocksProxyType {
+  /// SOCKS4 is for the version 4
+  socks4,
+
+  /// SOCKS4a is for the version 4 without resolving the host name locally
+  socks4a,
+
+  /// SOCKS5 is for the version 5
+  socks5,
+
+  /// SOCKS5-hostname is for the version 5 without resolving the host name locally
+  socks5hostname,
+}
+
 /// HTTP Client in Linux environment, executing the `curl` binary.
 /// Use it only if the required feature (e.g. SOCKS proxy) is not available in
 /// `console.dart`'s `ConsoleClient`.
@@ -14,11 +30,19 @@ class CurlClient implements Client {
   /// The HTTP user agent.
   final String userAgent;
 
-  /// SOCKS5 Proxy in `host:port` format.
+  /// SOCKS Proxy in `host:port` format.
   final String socksHostPort;
 
+  /// SOCKS Proxy type. Default is SOCKS5.
+  final CurlSocksProxyType socksProxyType;
+
   /// HTTP Client in Linux environment, executing the `curl` binary.
-  CurlClient({this.executable, this.userAgent, this.socksHostPort});
+  CurlClient({
+    this.executable,
+    this.userAgent,
+    this.socksHostPort,
+    this.socksProxyType = CurlSocksProxyType.socks5,
+  });
 
   @override
   Future<Response> send(Request request) async {
@@ -34,7 +58,25 @@ class CurlClient implements Client {
       args.add(request.maxRedirects.toString());
     }
     if (userAgent != null) args.addAll(['-A', userAgent]);
-    if (socksHostPort != null) args.addAll(['--socks5', socksHostPort]);
+
+    if (socksHostPort != null) {
+      switch (socksProxyType) {
+        case CurlSocksProxyType.socks4:
+          args.add('--socks4');
+          break;
+        case CurlSocksProxyType.socks4a:
+          args.add('--socks4a');
+          break;
+        case CurlSocksProxyType.socks5:
+          args.add('--socks5');
+          break;
+        case CurlSocksProxyType.socks5hostname:
+          args.add('--socks5-hostname');
+          break;
+      }
+      args.add(socksHostPort);
+    }
+
     final method = request.method ?? 'GET';
     args.addAll(['-X', method.toUpperCase()]);
     // TODO: add data processing, e.g. for strings:
