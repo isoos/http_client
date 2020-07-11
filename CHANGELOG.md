@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.1
+
+- Support all SOCKS type with `curl`. ([#6](https://github.com/isoos/http_client/pull/6) by [utopicnarwhal](https://github.com/utopicnarwhal))
+
 ## 1.4.0
 
 - Updated code to use latest Dart style guide.
