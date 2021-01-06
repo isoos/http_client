@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'http_client.dart';
@@ -46,8 +47,9 @@ class CurlClient implements Client {
 
   @override
   Future<Response> send(Request request) async {
-    if (request.body != null) {
-      throw Exception('Sending body is not yet supported.');
+    final method = request.method ?? 'GET';
+    if (request.body != null && method != 'GET' && method != 'POST') {
+      throw Exception('Sending body is only supported for POST method.');
     }
     final args = <String>[];
     if (request.followRedirects == null || request.followRedirects) {
@@ -76,11 +78,9 @@ class CurlClient implements Client {
       }
       args.add(socksHostPort);
     }
-
-    final method = request.method ?? 'GET';
     args.addAll(['-X', method.toUpperCase()]);
-    // TODO: add data processing, e.g. for strings:
-    // if (data != null) args.addAll(['--data', data]);
+    // --data parameter added in GET and POST Method. If method is 'GET', body may no have any effect in the request. UTF-8 encoding setted as default.
+    if (request.body != null) args.addAll(['--data', utf8.decode(request.body)]);
     args.add(request.uri.toString());
     // TODO: handle status code and reason phrase
     var prf = Process.run(executable ?? 'curl', args, stdoutEncoding: null);
