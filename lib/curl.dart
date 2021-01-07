@@ -80,10 +80,12 @@ class CurlClient implements Client {
     }
     args.addAll(['-X', method.toUpperCase()]);
     // --data parameter added in GET and POST Method. If method is 'GET', body may no have any effect in the request. UTF-8 encoding setted as default.
-    if(request.body is! List<int>){
-      throw Exception('Request body type must be List<int>');
+    if (request.body != null) {
+      if (request.body is! List<int>) {
+        throw Exception('Request body type must be List<int>');
+      }
+      args.addAll(['--data', utf8.decode(request.body)]);
     }
-    if (request.body != null) args.addAll(['--data', utf8.decode(request.body)]);
     args.add(request.uri.toString());
     // TODO: handle status code and reason phrase
     var prf = Process.run(executable ?? 'curl', args, stdoutEncoding: null);

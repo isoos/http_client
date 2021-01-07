@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.4.1+1
+## 1.4.2
 
 - Support POST method in `CurlClient`. ([#9](https://github.com/isoos/http_client/pull/9) by [rbandres98](https://github.com/rbandres98))
 
