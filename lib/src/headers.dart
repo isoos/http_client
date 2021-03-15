@@ -7,7 +7,7 @@ class Headers {
   final Map<String, List<String>> _values = {};
 
   /// Creates a HTTP Header object, optinally using [values] as initializer.
-  Headers([Map<String, dynamic> values]) {
+  Headers([Map<String, dynamic>? values]) {
     values?.forEach(add);
   }
 
@@ -18,7 +18,7 @@ class Headers {
   Iterable<String> get keys => _values.keys;
 
   /// Returns the values set for [header].
-  List<String> operator [](String header) => _values[header.toLowerCase()];
+  List<String>? operator [](String header) => _values[header.toLowerCase()];
 
   /// Add [header] with [value].
   ///
@@ -60,7 +60,7 @@ class Headers {
 }
 
 /// Properly wraps headers.
-Headers wrapHeaders(dynamic headers, {bool clone = false}) {
+Headers? wrapHeaders(dynamic headers, {bool clone = false}) {
   if (headers == null) {
     return clone ? Headers() : null;
   } else if (headers is Headers) {

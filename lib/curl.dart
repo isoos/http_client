@@ -26,13 +26,13 @@ enum CurlSocksProxyType {
 /// `console.dart`'s `ConsoleClient`.
 class CurlClient implements Client {
   /// The `curl` executable.
-  final String executable;
+  final String? executable;
 
   /// The HTTP user agent.
-  final String userAgent;
+  final String? userAgent;
 
   /// SOCKS Proxy in `host:port` format.
-  final String socksHostPort;
+  final String? socksHostPort;
 
   /// SOCKS Proxy type. Default is SOCKS5.
   final CurlSocksProxyType socksProxyType;
@@ -47,12 +47,12 @@ class CurlClient implements Client {
 
   @override
   Future<Response> send(Request request) async {
-    final method = request.method ?? 'GET';
+    final method = request.method;
     if (request.body != null && method != 'GET' && method != 'POST') {
       throw Exception('Sending body is only supported for POST method.');
     }
-    final args = <String>[];
-    if (request.followRedirects == null || request.followRedirects) {
+    final args = <String?>[];
+    if (request.followRedirects == null || request.followRedirects!) {
       args.add('-L');
     }
     if (request.maxRedirects != null) {
@@ -88,13 +88,14 @@ class CurlClient implements Client {
     }
     args.add(request.uri.toString());
     // TODO: handle status code and reason phrase
-    var prf = Process.run(executable ?? 'curl', args, stdoutEncoding: null);
-    if (request.timeout != null && request.timeout > Duration.zero) {
-      prf = prf.timeout(request.timeout);
+    var prf = Process.run(executable ?? 'curl', args as List<String>,
+        stdoutEncoding: null);
+    if (request.timeout != null && request.timeout! > Duration.zero) {
+      prf = prf.timeout(request.timeout!);
     }
     final pr = await prf;
     final list = (pr.stdout as List).cast<int>();
-    return Response(pr.exitCode == 0 ? 200 : -1, null, Headers(),
+    return Response(pr.exitCode == 0 ? 200 : -1, '', Headers(),
         Stream.fromIterable(<List<int>>[list]));
   }
 

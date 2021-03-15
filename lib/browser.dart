@@ -11,15 +11,15 @@ export 'http_client.dart';
 class BrowserClient implements Client {
   @override
   Future<Response> send(Request request) async {
-    if (request.timeout != null && request.timeout > Duration.zero) {
-      return _send(request).timeout(request.timeout);
+    if (request.timeout != null && request.timeout! > Duration.zero) {
+      return _send(request).timeout(request.timeout!);
     } else {
       return _send(request);
     }
   }
 
   Future<Response> _send(Request request) async {
-    ByteBuffer buffer;
+    ByteBuffer? buffer;
 
     final body = request.body;
     if (body is List<int>) {
@@ -35,16 +35,16 @@ class BrowserClient implements Client {
     final rs = await html.HttpRequest.request(
       request.uri.toString(),
       method: request.method,
-      requestHeaders: request.headers?.toSimpleMap(),
+      requestHeaders: request.headers.toSimpleMap(),
       sendData: sendData,
     );
     final response = rs.response;
     final headers = Headers(rs.responseHeaders);
     if (response is ByteBuffer) {
       return Response(
-          rs.status, rs.statusText, headers, response.asUint8List());
+          rs.status ?? 0, rs.statusText ?? '', headers, response.asUint8List());
     } else {
-      return Response(rs.status, rs.statusText, headers, response);
+      return Response(rs.status ?? 0, rs.statusText ?? '', headers, response);
     }
   }
 

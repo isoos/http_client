@@ -9,7 +9,7 @@ export 'http_client.dart';
 /// HTTP Client in console (server) environment.
 class ConsoleClient implements Client {
   final io.HttpClient _delegate;
-  final Headers _headers;
+  final Headers? _headers;
 
   ConsoleClient._(this._delegate, this._headers);
 
@@ -18,28 +18,28 @@ class ConsoleClient implements Client {
   /// Set [proxy] for static http proxy, or [proxyFn] for dynamic http proxy.
   /// Return format should be e.g. ""PROXY host:port; PROXY host2:port2; DIRECT"
   factory ConsoleClient({
-    String proxy,
-    String Function(Uri uri) proxyFn,
+    String? proxy,
+    String Function(Uri uri)? proxyFn,
 
     /* Headers | Map */
     dynamic headers,
 
     /// The idle timeout of non-active persistent (keep-alive) connections.
-    Duration idleTimeout,
+    Duration? idleTimeout,
 
     /// the maximum number of live connections, to a single host.
-    int maxConnectionsPerHost,
+    int? maxConnectionsPerHost,
 
     /// Whether the body of a response will be automatically uncompressed.
-    bool autoUncompress,
+    bool? autoUncompress,
 
     /// The default value of the `User-Agent` header for all requests.
     /// Set to empty string to disable setting the User-Agent header automatically.
-    String userAgent,
+    String? userAgent,
 
     /// Whether to silently ignore bad certificates.
     /// Use it only on known servers with demo/expired SSL certs.
-    bool ignoreBadCertificates,
+    bool? ignoreBadCertificates,
   }) {
     ignoreBadCertificates ??= false;
     final delegate = io.HttpClient();
@@ -68,8 +68,8 @@ class ConsoleClient implements Client {
 
   @override
   Future<Response> send(Request request) {
-    if (request.timeout != null && request.timeout > Duration.zero) {
-      return _send(request).timeout(request.timeout);
+    if (request.timeout != null && request.timeout! > Duration.zero) {
+      return _send(request).timeout(request.timeout!);
     } else {
       return _send(request);
     }
@@ -95,22 +95,22 @@ class ConsoleClient implements Client {
       rq.headers.set('Content-Length', length.toString());
     }
 
-    request?.headers?.keys?.forEach((key) {
+    request.headers.keys.forEach((key) {
       applyHeader(request.headers, key);
     });
-    _headers?.keys?.forEach((key) {
+    _headers?.keys.forEach((key) {
       if (appliedHeaders.contains(key)) return;
-      applyHeader(_headers, key);
+      applyHeader(_headers!, key);
     });
 
     if (request.persistentConnection != null) {
-      rq.persistentConnection = request.persistentConnection;
+      rq.persistentConnection = request.persistentConnection!;
     }
     if (request.followRedirects != null) {
-      rq.followRedirects = request.followRedirects;
+      rq.followRedirects = request.followRedirects!;
     }
     if (request.maxRedirects != null) {
-      rq.maxRedirects = request.maxRedirects;
+      rq.maxRedirects = request.maxRedirects!;
     }
 
     // sending body
@@ -144,11 +144,11 @@ class ConsoleClient implements Client {
       rs.reasonPhrase,
       headers,
       rs,
-      redirects: rs?.redirects
-          ?.map((ri) => RedirectInfo(ri.statusCode, ri.method, ri.location))
-          ?.toList(),
-      requestAddress: rq?.connectionInfo?.remoteAddress?.address,
-      responseAddress: rs?.connectionInfo?.remoteAddress?.address,
+      redirects: rs.redirects
+          .map((ri) => RedirectInfo(ri.statusCode, ri.method, ri.location))
+          .toList(),
+      requestAddress: rq.connectionInfo?.remoteAddress.address,
+      responseAddress: rs.connectionInfo?.remoteAddress.address,
     );
   }
 
