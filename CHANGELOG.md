@@ -1,5 +1,9 @@
 # Changelog
 
+## next
+
+- Removed `package:meta` as direct dependency.
+
 ## 1.5.0
 
 - Migrated to null safety.
