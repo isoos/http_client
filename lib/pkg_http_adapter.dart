@@ -30,7 +30,7 @@ class PkgHttpAdapter extends h.BaseClient implements h.Client {
     );
     return h.StreamedResponse(
       rs.bodyAsStream as Stream<List<int>>,
-      rs.statusCode!,
+      rs.statusCode,
       headers: rs.headers.toSimpleMap(),
       reasonPhrase: rs.reasonPhrase,
       request: request,
