@@ -1,8 +1,9 @@
 # Changelog
 
-## next
+## 1.5.1
 
 - Removed `package:meta` as direct dependency.
+- Fixed null-aware operator.
 
 ## 1.5.0
 
