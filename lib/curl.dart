@@ -88,7 +88,7 @@ class CurlClient implements Client {
     }
     args.add(request.uri.toString());
     // TODO: handle status code and reason phrase
-    var prf = Process.run(executable ?? 'curl', args as List<String>,
+    var prf = Process.run(executable ?? 'curl', args.whereType<String>().toList(),
         stdoutEncoding: null);
     if (request.timeout != null && request.timeout! > Duration.zero) {
       prf = prf.timeout(request.timeout!);
