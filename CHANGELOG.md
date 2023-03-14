@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.5.1
+
+- Removed `package:meta` as direct dependency.
+- Fixed null-aware operator.
+
+## 1.5.0
+
+- Migrated to null safety.
+
 ## 1.4.2
 
 - Support POST method in `CurlClient`. ([#9](https://github.com/isoos/http_client/pull/9) by [rbandres98](https://github.com/rbandres98))

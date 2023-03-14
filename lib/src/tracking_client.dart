@@ -8,7 +8,7 @@ class TrackingClient implements Client {
   /// The backing configuration description of the delegate client.
   final dynamic delegateConfig;
   final Client _delegate;
-  final _ongoingRequests = <Future>[];
+  final _ongoingRequests = <Future?>[];
   final _ongoingContents = <Future>[];
   int _ongoingCount = 0;
   int _completedCount = 0;
@@ -29,8 +29,8 @@ class TrackingClient implements Client {
       throw StateError('HTTP Client is already closed.');
     }
     _ongoingCount++;
-    Future rsf;
-    Future bf;
+    Future? rsf;
+    Future? bf;
     try {
       rsf = _delegate.send(request);
       _ongoingRequests.add(rsf);
@@ -57,7 +57,7 @@ class TrackingClient implements Client {
 
   /// Completes when the currently active requests and content reads complete.
   Future join() async {
-    await Future.wait(_ongoingRequests.map((f) => f.whenComplete(() => null)));
+    await Future.wait(_ongoingRequests.map((f) => f!.whenComplete(() => null)));
     await Future.wait(_ongoingContents.map((f) => f.whenComplete(() => null)));
   }
 

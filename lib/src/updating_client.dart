@@ -1,7 +1,5 @@
 import 'dart:async';
 
-import 'package:meta/meta.dart';
-
 import '../http_client.dart';
 import 'tracking_client.dart';
 
@@ -20,16 +18,16 @@ class UpdatingClient implements Client {
   final bool _invalidateOnError;
   final bool _forceCloseOnError;
 
-  Timer _cleanupTimer;
-  final _pastClients = <_Client>[];
-  _Client _current;
-  Completer _nextCompleter;
+  Timer? _cleanupTimer;
+  final _pastClients = <_Client?>[];
+  _Client? _current;
+  Completer? _nextCompleter;
   bool _isClosing = false;
 
   ///
   UpdatingClient({
-    @required CreateClientFn createClientFn,
-    CloseClientFn closeClientFn,
+    required CreateClientFn createClientFn,
+    CloseClientFn? closeClientFn,
     int requestLimit = 1000,
     Duration timeLimit = const Duration(hours: 1),
     bool invalidateOnError = false,
@@ -85,7 +83,7 @@ class UpdatingClient implements Client {
     _cleanupTimer = null;
     await _cleanupPastClients(force);
     if (_current != null) {
-      await _closeClientFn(_current._client, force);
+      await _closeClientFn(_current!._client, force);
     }
   }
 
@@ -97,7 +95,7 @@ class UpdatingClient implements Client {
     });
   }
 
-  Future _cleanupPastClients(bool force, [Duration timeout]) async {
+  Future _cleanupPastClients(bool force, [Duration? timeout]) async {
     if (_pastClients.isEmpty) return;
     final pastClients = List<_Client>.from(_pastClients);
     final futures = pastClients
@@ -114,17 +112,17 @@ class UpdatingClient implements Client {
       throw StateError('HTTP Client closing.');
     }
     // expire if needed
-    if (_current != null && _current.isExpired(_requestLimit, _timeLimit)) {
+    if (_current != null && _current!.isExpired(_requestLimit, _timeLimit)) {
       expireCurrent();
     }
     // wait for ongoing creation
     if (_nextCompleter != null) {
-      await _nextCompleter.future;
+      await _nextCompleter!.future;
     }
     // return if available
     if (_current != null) {
-      _current._useCount++;
-      return _current;
+      _current!._useCount++;
+      return _current!;
     }
     // create new
     _nextCompleter = Completer();
@@ -134,9 +132,9 @@ class UpdatingClient implements Client {
           client is TrackingClient ? client : TrackingClient(client);
       expireCurrent();
       _current = _Client(trackingClient);
-      _current._useCount++;
-      _nextCompleter.complete();
-      return _current;
+      _current!._useCount++;
+      _nextCompleter!.complete();
+      return _current!;
     } finally {
       _nextCompleter = null;
     }
@@ -146,7 +144,7 @@ class UpdatingClient implements Client {
   /// new client creation.
   void expireCurrent({bool force = false}) {
     if (_current != null) {
-      _current._forceClose = force;
+      _current!._forceClose = force;
       _pastClients.add(_current);
       _current = null;
     }

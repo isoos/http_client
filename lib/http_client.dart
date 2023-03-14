@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert' as c;
+import 'dart:typed_data';
 
 import 'package:buffer/buffer.dart' as buffer;
 
@@ -42,17 +43,17 @@ class Request {
   final dynamic body;
 
   /// The requested persistent connection state.
-  final bool persistentConnection;
+  final bool? persistentConnection;
 
   /// Whether this request should automatically follow redirects.
-  final bool followRedirects;
+  final bool? followRedirects;
 
   /// The maximum number of redirects to follow when [followRedirects] is `true`.
-  final int maxRedirects;
+  final int? maxRedirects;
 
   /// The timeout for the underlying HTTP request. Framework-related overheads,
   /// e.g. scheduling or proxy initialization is not counted against this time.
-  final Duration timeout;
+  final Duration? timeout;
 
   /// Creates a HTTP Request object.
   factory Request(
@@ -60,19 +61,19 @@ class Request {
     dynamic uri, {
     dynamic headers,
     dynamic body,
-    Map<String, dynamic> form,
+    Map<String, dynamic>? form,
     dynamic json,
-    Map<String, String> cookies,
-    c.Encoding encoding,
-    bool persistentConnection,
-    bool followRedirects,
-    int maxRedirects,
-    Duration timeout,
+    Map<String, String>? cookies,
+    c.Encoding? encoding,
+    bool? persistentConnection,
+    bool? followRedirects,
+    int? maxRedirects,
+    Duration? timeout,
   }) {
     assert(uri is String || uri is Uri);
     encoding ??= c.utf8;
     final parsedUri = uri is Uri ? uri : Uri.parse(uri.toString());
-    final newHeaders = wrapHeaders(headers, clone: true);
+    final newHeaders = wrapHeaders(headers, clone: true)!;
     body = _buildBody(body, encoding, newHeaders, form, json, cookies);
     return Request._(
       method,
@@ -109,13 +110,13 @@ class Request {
     dynamic headers,
     dynamic patchHeaders,
     dynamic body,
-    Map<String, dynamic> form,
-    Map<String, dynamic> json,
-    Map<String, String> cookies,
-    c.Encoding encoding,
+    Map<String, dynamic>? form,
+    Map<String, dynamic>? json,
+    Map<String, String>? cookies,
+    c.Encoding? encoding,
   }) {
     encoding ??= c.utf8;
-    Uri parsedUri;
+    Uri? parsedUri;
     if (uri != null) {
       assert(uri is String || uri is Uri);
       parsedUri = uri is Uri ? uri : Uri.parse(uri.toString());
@@ -123,9 +124,9 @@ class Request {
 
     final newHeaders = headers == null
         ? this.headers.clone()
-        : wrapHeaders(headers, clone: true);
+        : wrapHeaders(headers, clone: true)!;
     if (patchHeaders != null) {
-      final patching = wrapHeaders(patchHeaders);
+      final patching = wrapHeaders(patchHeaders)!;
       patching.keys.forEach((key) {
         newHeaders.remove(key);
         newHeaders.add(key, patching[key]);
@@ -160,19 +161,19 @@ class Response {
   final Headers headers;
 
   dynamic _body;
-  String _bodyText;
-  List<int> _bodyBytes;
-  Stream<List<int>> _bodyStream;
-  Completer _doneCompleter;
+  String? _bodyText;
+  List<int>? _bodyBytes;
+  Stream<List<int>?>? _bodyStream;
+  late Completer _doneCompleter;
 
   /// The redirect steps that happened.
-  final List<RedirectInfo> redirects;
+  final List<RedirectInfo>? redirects;
 
   /// The remote address that the response was opened at.
-  final String requestAddress;
+  final String? requestAddress;
 
   /// The remote address that the response was returned from.
-  final String responseAddress;
+  final String? responseAddress;
 
   /// Creates a HTTP Response object.
   Response(
@@ -208,7 +209,7 @@ class Response {
   }
 
   /// HTTP body content as Stream.
-  Stream<List<int>> get bodyAsStream {
+  Stream<List<int>?>? get bodyAsStream {
     if (_bodyStream != null) {
       return _bodyStream;
     }
@@ -217,7 +218,7 @@ class Response {
       return _bodyStream;
     }
     if (_bodyText != null) {
-      _bodyStream ??= Stream.fromIterable([c.utf8.encode(_bodyText)]);
+      _bodyStream ??= Stream.fromIterable([c.utf8.encode(_bodyText!)]);
     }
     if (_body != null) {
       throw StateError('Unable to convert body to Stream');
@@ -226,44 +227,44 @@ class Response {
   }
 
   /// Reads the body content as String with [encoding]
-  Future<String> readAsString({c.Encoding encoding}) {
+  Future<String> readAsString({c.Encoding? encoding}) async {
     // TODO: detect encoding from headers
     encoding ??= c.utf8;
     if (encoding == c.utf8 && _bodyText != null) {
       return Future.value(_bodyText);
     }
     if (_bodyBytes != null) {
-      return Future.value(encoding.decode(_bodyBytes));
+      return Future.value(encoding.decode(_bodyBytes!));
     }
     if (_bodyStream != null) {
-      return encoding.decodeStream(_bodyStream);
+      return encoding.decodeStream(_bodyStream as Stream<List<int>>);
     }
     if (_body != null) {
       throw StateError('Unable to convert body to String');
     }
-    return null;
+    return '';
   }
 
   /// Reads the body content as bytes.
   Future<List<int>> readAsBytes() async {
     if (_bodyText != null) {
-      return c.utf8.encode(_bodyText);
+      return c.utf8.encode(_bodyText!);
     }
     if (_bodyBytes != null) {
-      return _bodyBytes;
+      return _bodyBytes!;
     }
     if (_bodyStream != null) {
-      return buffer.readAsBytes(_bodyStream);
+      return buffer.readAsBytes(_bodyStream as Stream<List<int>>);
     }
     if (_body != null) {
       throw StateError('Unable to convert body to bytes');
     }
-    return null;
+    return Uint8List(0);
   }
 
   /// Completes when the underlying input stream has been read and completed.
   Future get done async {
-    await _doneCompleter?.future;
+    await _doneCompleter.future;
   }
 }
 
@@ -304,11 +305,11 @@ dynamic _buildBody(
     oldBody,
     c.Encoding encoding,
     Headers newHeaders,
-    Map<String, dynamic> form,
-    Map<String, dynamic> json,
-    Map<String, String> cookies) {
+    Map<String, dynamic>? form,
+    Map<String, dynamic>? json,
+    Map<String, String>? cookies) {
   dynamic body = oldBody;
-  String contentType;
+  String? contentType;
   if (form != null) {
     if (body != null) {
       throw ArgumentError('body is specified multiple times (form)');

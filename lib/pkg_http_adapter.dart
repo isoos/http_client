@@ -11,10 +11,9 @@ class PkgHttpAdapter extends h.BaseClient implements h.Client {
 
   @override
   Future<h.StreamedResponse> send(h.BaseRequest request) async {
-    final headers = <String, String>{};
-    if (request.headers != null) {
-      headers.addAll(request.headers);
-    }
+    final headers = <String, String>{
+      ...request.headers,
+    };
     if (request.contentLength != null) {
       headers['content-length'] ??= request.contentLength.toString();
     }
@@ -30,18 +29,18 @@ class PkgHttpAdapter extends h.BaseClient implements h.Client {
       ),
     );
     return h.StreamedResponse(
-      rs.bodyAsStream,
+      rs.bodyAsStream as Stream<List<int>>,
       rs.statusCode,
       headers: rs.headers.toSimpleMap(),
       reasonPhrase: rs.reasonPhrase,
       request: request,
-      isRedirect: rs.redirects != null && rs.redirects.isNotEmpty,
+      isRedirect: rs.redirects != null && rs.redirects!.isNotEmpty,
       contentLength: int.tryParse(rs.headers['content-length']?.first ?? ''),
     );
   }
 
   @override
-  Future close({bool force}) async {
+  Future close({bool? force}) async {
     await _client.close(force: force ?? false);
   }
 }
