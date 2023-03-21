@@ -1,7 +1,7 @@
 name: http_client
 description: |
     A platform-independent HTTP client API supporting browser, console, and curl (for SOCKS proxy).
-version: 1.5.1
+version: 1.5.2
 
 homepage: https://github.com/isoos/http_client
 

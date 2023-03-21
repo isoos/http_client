@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.5.2
+
+- Fix CurlClient problems after Null-Safety migration.
+- Handle not allowed methods according to HTTP/1.1 (RFC 7231) in curl.
+- Add headers support in curl client.
+
 ## 1.5.1
 
 - Removed `package:meta` as direct dependency.
@@ -11,7 +17,7 @@
 
 ## 1.4.2
 
-- Support POST method in `CurlClient`. ([#9](https://github.com/isoos/http_client/pull/9) by [rbandres98](https://github.com/rbandres98))
+- Support POST method in `CurlClient`. ([#9](https://github.com/isoos/http_client/pull/9) by [andresruizdev](https://github.com/andresruizdev))
 
 ## 1.4.1
 
