@@ -5,6 +5,7 @@
 - Fix CurlClient problems after Null-Safety migration.
 - Handle not allowed methods according to HTTP/1.1 (RFC 7231) in curl.
 - Add headers support in curl client.
+- Update andresruizdev username and profile URL in CHANGELOG.md (Changed from rbandres98 to andresruizdev)
 
 ## 1.5.1
 
