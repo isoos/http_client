@@ -45,11 +45,25 @@ class CurlClient implements Client {
     this.socksProxyType = CurlSocksProxyType.socks5,
   });
 
+  bool methodSupportsBody(String method) {
+    // According to HTTP/1.1 (RFC 7231), the following methods should not be allowed by servers: https://www.rfc-editor.org/rfc/rfc7231
+    const methodsWithoutBody = {
+      'GET',
+      'HEAD',
+      'DELETE',
+      'CONNECT',
+      'OPTIONS',
+      'TRACE',
+    };
+
+    return !methodsWithoutBody.contains(method.toUpperCase());
+  }
+
   @override
   Future<Response> send(Request request) async {
     final method = request.method;
-    if (request.body != null && method != 'GET' && method != 'POST') {
-      throw Exception('Sending body is only supported for POST method.');
+    if (request.body != null && !methodSupportsBody(method)) {
+      throw Exception('Sending body is not supported by requested method.');
     }
     final args = <String?>[];
     if (request.followRedirects == null || request.followRedirects!) {
@@ -79,6 +93,11 @@ class CurlClient implements Client {
       args.add(socksHostPort);
     }
     args.addAll(['-X', method.toUpperCase()]);
+
+    request.headers.toSimpleMap().forEach((key, value) {
+      args.addAll(['-H', '$key:$value']);
+    });
+
     // --data parameter added in GET and POST Method. If method is 'GET', body may no have any effect in the request. UTF-8 encoding setted as default.
     if (request.body != null) {
       if (request.body is! List<int>) {
@@ -88,7 +107,7 @@ class CurlClient implements Client {
     }
     args.add(request.uri.toString());
     // TODO: handle status code and reason phrase
-    var prf = Process.run(executable ?? 'curl', args as List<String>,
+    var prf = Process.run(executable ?? 'curl', args.where((element) => element != null).map((e) => e!).toList(),
         stdoutEncoding: null);
     if (request.timeout != null && request.timeout! > Duration.zero) {
       prf = prf.timeout(request.timeout!);
