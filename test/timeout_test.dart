@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:test/test.dart';
 
-import 'package:http_client/http_client.dart';
 import 'package:http_client/console.dart';
 
 void main() {

@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import '../http_client.dart';
-import 'tracking_client.dart';
 
 /// Creates a HTTP client asynchronously.
 typedef CreateClientFn = Future<Client> Function();
