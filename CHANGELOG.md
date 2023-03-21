@@ -2,7 +2,7 @@
 
 ## 1.5.2
 
-- Fix CurlClient problems after Null-Safety migration.
+- Fix CurlClient problems after Null-Safety migration ([#14](https://github.com/isoos/http_client/pull/14) by [andresruizdev](https://github.com/andresruizdev)).
 - Handle not allowed methods according to HTTP/1.1 (RFC 7231) in curl.
 - Add headers support in curl client.
 - Update andresruizdev username and profile URL in CHANGELOG.md (Changed from rbandres98 to andresruizdev)
