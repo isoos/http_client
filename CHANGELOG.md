@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.5.3
+- Update dependencies.
+- Fix timeout_out.dart with a new timeout service.
+
 ## 1.5.2
 
 - Fix CurlClient problems after Null-Safety migration ([#14](https://github.com/isoos/http_client/pull/14) by [andresruizdev](https://github.com/andresruizdev)).
