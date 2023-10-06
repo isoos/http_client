@@ -1,8 +1,8 @@
 # Changelog
 
 ## 1.5.3
-- Update dependencies.
-- Fix timeout_out.dart with a new timeout service.
+
+- Updated dependencies ([#15](https://github.com/isoos/http_client/pull/15) by [SaadArdati](https://github.com/SaadArdati)).
 
 ## 1.5.2
 
