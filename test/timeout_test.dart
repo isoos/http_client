@@ -9,7 +9,7 @@ void main() {
     final client = UpdatingClient(createClientFn: () async => ConsoleClient());
     final rs = client.send(Request(
       'GET',
-      'http://slowwly.robertomurray.co.uk/delay/3000/url/https://www.google.com/',
+      'https://httpstat.us/504?sleep=3000',
       followRedirects: false,
       timeout: Duration(seconds: 1),
     ));
