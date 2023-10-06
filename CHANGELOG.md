@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.5.3
+
+- Updated dependencies ([#15](https://github.com/isoos/http_client/pull/15) by [SaadArdati](https://github.com/SaadArdati)).
+
 ## 1.5.2
 
 - Fix CurlClient problems after Null-Safety migration ([#14](https://github.com/isoos/http_client/pull/14) by [andresruizdev](https://github.com/andresruizdev)).
